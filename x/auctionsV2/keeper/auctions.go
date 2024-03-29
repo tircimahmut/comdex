@@ -336,6 +336,20 @@ func (k Keeper) UpdateDutchAuction(ctx sdk.Context, dutchAuction types.Auction) 
 
 func (k Keeper) RestartEnglishAuction(ctx sdk.Context, englishAuction types.Auction) error {
 
+	// logic to revoke debt auction, instead of restarting
+	// get the locked vault for that auction and check initiator type = "debt"
+	lockedVault, _ := k.LiquidationsV2.GetLockedVault(ctx, 2, englishAuction.LockedVaultId)
+	if lockedVault.InitiatorType == "debt" {
+		// delete auction and the associated locked vault if no bids
+		if englishAuction.ActiveBiddingId == 0 {
+			err := k.DeleteAuction(ctx, englishAuction)
+			if err != nil {
+				return err
+			}
+			k.LiquidationsV2.DeleteLockedVault(ctx, englishAuction.AppId, englishAuction.LockedVaultId)
+		}
+	}
+
 	auctionParams, _ := k.GetAuctionParams(ctx)
 	englishAuction.EndTime = ctx.BlockTime().Add(time.Second * time.Duration(auctionParams.AuctionDurationSeconds))
 	err := k.SetAuction(ctx, englishAuction)
