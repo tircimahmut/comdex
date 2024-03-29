@@ -519,6 +519,7 @@ func (k Keeper) CheckStatsForSurplusAndDebt(ctx sdk.Context, appID, assetID uint
 		}
 		if !auctionActive {
 			actualSlots := ((collector.DebtThreshold).Sub(netFeeCollectedData.NetFeesCollected.Add(collector.LotSize))).Quo(collector.LotSize)
+			actualSlots = actualSlots.Add(sdk.NewInt(1))
 			slots := k.collector.GetSlots(ctx)
 			if actualSlots.Uint64() < slots {
 				slots = actualSlots.Uint64()
