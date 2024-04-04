@@ -31,6 +31,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		queryAuction(),
 		queryAuctions(),
 		queryBids(),
+		queryBid(),
 		queryAuctionParams(),
 		queryUserLimitOrderBidsByAssetID(),
 		queryLimitOrderBids(),
@@ -163,6 +164,38 @@ func queryBids() *cobra.Command {
 	}
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "bids")
+
+	return cmd
+}
+
+func queryBid() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "bid [bid-id]",
+		Short: "Query bid by bid id",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			bidID, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(ctx)
+			res, err := queryClient.Bid(
+				context.Background(),
+				&types.QueryBidRequest{
+					BidId: bidID,
+				},
+			)
+			if err != nil {
+				return err
+			}
+			return ctx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
 }

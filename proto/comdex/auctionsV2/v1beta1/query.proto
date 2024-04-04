@@ -62,6 +62,17 @@ message QueryBidsResponse {
   [(gogoproto.moretags) = "yaml:\"pagination\""];
 }
 
+message QueryBidRequest {
+  uint64 bid_id = 1;
+}
+
+message QueryBidResponse {
+  Bid bid = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"bids\""
+  ];
+}
+
 message QueryAuctionParamsRequest {}
 
 message QueryAuctionParamsResponse {
@@ -202,6 +213,9 @@ service Query {
   }
   rpc Bids(QueryBidsRequest) returns (QueryBidsResponse) {
     option (google.api.http).get = "/comdex/auctions/v2/bids/{bidder}/{bid_type}/{history}";
+  }
+  rpc Bid(QueryBidRequest) returns (QueryBidResponse) {
+    option (google.api.http).get = "/comdex/auctions/v2/bid/{bid_id}";
   }
   rpc AuctionParams(QueryAuctionParamsRequest) returns (QueryAuctionParamsResponse) {
     option (google.api.http).get = "/comdex/auctions/v2/auction_params";
