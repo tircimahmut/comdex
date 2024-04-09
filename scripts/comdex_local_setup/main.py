@@ -255,7 +255,6 @@ def ExecuteWasmGovernanceProposal(contractAddress, proposalID):
             "proposal_id":proposalID
         }
     }
-    time.sleep(3)
     command = f"""comdex tx wasm execute {contractAddress} '{json.dumps(execute)}' --from {GENESIS_ACCOUNT_NAME} --chain-id {CHAIN_ID} --gas 5000000 --keyring-backend test -y --output json"""
     output = subprocess.getstatusoutput(command)[1]
     output = json.loads(output)
@@ -415,11 +414,12 @@ def CreateState():
 
     contractAddresses = StoreAndIntantiateWasmContract()
     for wasmProp in WASM_PROPOSALS:
+        time.sleep(10)
         contractAddress = contractAddresses[wasmProp['contractAddressKey']]
         ProposeWasmProposal(contractAddress, wasmProp['content'], wasmProp['proposalID'])
         print(f"waiting for wasm prop {wasmProp['proposalID']}")
         if wasmProp['isProposal']:
-            time.sleep(APPS[0][3]) # waiting for proposal duration
+            time.sleep(20) # waiting for proposal duration
             ExecuteWasmGovernanceProposal(contractAddress, wasmProp['proposalID'])
 
 def limitOrderHelper(fromAcc, appID, pairID, direction, offerCoin, demandCoinDenom, price, amount):
