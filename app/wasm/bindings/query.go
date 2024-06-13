@@ -31,13 +31,6 @@ type ContractQuery struct {
 	CheckLiquidityProvided                 *CheckLiquidityProvided                 `json:"check_liquidity_provided,omitempty"`
 	GetPoolByApp                           *GetPoolByApp                           `json:"get_pool_by_app,omitempty"`
 	GetAssetPrice                          *GetAssetPrice                          `json:"get_asset_price,omitempty"`
-	/// Given a subdenom minted by a contract via `OsmosisMsg::MintTokens`,
-	/// returns the full denom as used by `BankMsg::Send`.
-	FullDenom       					   *FullDenom       					   `json:"full_denom,omitempty"`
-	Admin           					   *DenomAdmin      				       `json:"admin,omitempty"`
-	Metadata        					   *GetMetadata     					   `json:"metadata,omitempty"`
-	DenomsByCreator 					   *DenomsByCreator 					   `json:"denoms_by_creator,omitempty"`
-	Params          					   *GetParams       					   `json:"params,omitempty"`
 }
 
 type AppData struct {
@@ -306,49 +299,4 @@ type GetAssetPrice struct {
 
 type GetAssetPriceResponse struct {
 	Price uint64 `json:"price"`
-}
-
-// See https://github.com/CosmWasm/token-bindings/blob/main/packages/bindings/src/query.rs
-
-// query types
-
-type FullDenom struct {
-	CreatorAddr string `json:"creator_addr"`
-	Subdenom    string `json:"subdenom"`
-}
-
-type GetMetadata struct {
-	Denom string `json:"denom"`
-}
-
-type DenomAdmin struct {
-	Denom string `json:"denom"`
-}
-
-type DenomsByCreator struct {
-	Creator string `json:"creator"`
-}
-
-type GetParams struct{}
-
-// responses
-
-type FullDenomResponse struct {
-	Denom string `json:"denom"`
-}
-
-type AdminResponse struct {
-	Admin string `json:"admin"`
-}
-
-type MetadataResponse struct {
-	Metadata *Metadata `json:"metadata,omitempty"`
-}
-
-type DenomsByCreatorResponse struct {
-	Denoms []string `json:"denoms"`
-}
-
-type ParamsResponse struct {
-	Params Params `json:"params"`
 }

@@ -2,28 +2,23 @@ package wasm
 
 import (
 	"fmt"
-	"os"
-	"testing"
-	"time"
-
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/comdex-official/comdex/app"
 	"github.com/comdex-official/comdex/app/wasm/bindings"
 	assetTypes "github.com/comdex-official/comdex/x/asset/types"
+	"github.com/comdex-official/comdex/x/tokenmint/keeper"
 	tokenmintTypes "github.com/comdex-official/comdex/x/tokenmint/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-
-	"github.com/stretchr/testify/require"
-
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	banktestutil "github.com/cosmos/cosmos-sdk/x/bank/testutil"
-	// simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/comdex-official/comdex/app"
-	"github.com/comdex-official/comdex/x/tokenmint/keeper"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktestutil "github.com/cosmos/cosmos-sdk/x/bank/testutil"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	"github.com/stretchr/testify/require"
+	"os"
+	"testing"
+	"time"
 )
 
 // func SetupCustomApp(t *testing.T) (*app.App, *sdk.Context) {

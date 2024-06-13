@@ -140,10 +140,6 @@ import (
 	collectorkeeper "github.com/comdex-official/comdex/x/collector/keeper"
 	collectortypes "github.com/comdex-official/comdex/x/collector/types"
 
-	"github.com/comdex-official/comdex/x/common"
-	commonkeeper "github.com/comdex-official/comdex/x/common/keeper"
-	commontypes "github.com/comdex-official/comdex/x/common/types"
-
 	"github.com/comdex-official/comdex/x/esm"
 	esmkeeper "github.com/comdex-official/comdex/x/esm/keeper"
 	esmtypes "github.com/comdex-official/comdex/x/esm/types"
@@ -194,11 +190,6 @@ import (
 	liquidationsV2keeper "github.com/comdex-official/comdex/x/liquidationsV2/keeper"
 	liquidationsV2types "github.com/comdex-official/comdex/x/liquidationsV2/types"
 
-	"github.com/comdex-official/comdex/x/gasless"
-	gaslessclient "github.com/comdex-official/comdex/x/gasless/client"
-	gaslesskeeper "github.com/comdex-official/comdex/x/gasless/keeper"
-	gaslesstypes "github.com/comdex-official/comdex/x/gasless/types"
-
 	"github.com/comdex-official/comdex/x/auctionsV2"
 	auctionsV2client "github.com/comdex-official/comdex/x/auctionsV2/client"
 	auctionsV2keeper "github.com/comdex-official/comdex/x/auctionsV2/keeper"
@@ -214,10 +205,6 @@ import (
 	auctionmoduleskip "github.com/skip-mev/block-sdk/x/auction"
 	auctionkeeperskip "github.com/skip-mev/block-sdk/x/auction/keeper"
 	auctionmoduleskiptypes "github.com/skip-mev/block-sdk/x/auction/types"
-
-	"github.com/comdex-official/comdex/x/tokenfactory"
-	tokenfactorykeeper "github.com/comdex-official/comdex/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/comdex-official/comdex/x/tokenfactory/types"
 
 	cwasm "github.com/comdex-official/comdex/app/wasm"
 
@@ -271,7 +258,6 @@ func GetGovProposalHandlers() []govclient.ProposalHandler {
 	proposalHandlers = append(proposalHandlers, liquidityclient.LiquidityProposalHandler...)
 	proposalHandlers = append(proposalHandlers, liquidationsV2client.LiquidationsV2Handler...)
 	proposalHandlers = append(proposalHandlers, auctionsV2client.AuctionsV2Handler...)
-	proposalHandlers = append(proposalHandlers, gaslessclient.GaslessProposalHandler...)
 
 	return proposalHandlers
 }
@@ -330,9 +316,6 @@ var (
 		ibcfee.AppModuleBasic{},
 		liquidationsV2.AppModuleBasic{},
 		auctionsV2.AppModuleBasic{},
-		common.AppModuleBasic{},
-		tokenfactory.AppModuleBasic{},
-		gasless.AppModuleBasic{},
 		icq.AppModuleBasic{},
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
@@ -417,11 +400,8 @@ type App struct {
 	Rewardskeeper     rewardskeeper.Keeper
 	NewliqKeeper      liquidationsV2keeper.Keeper
 	NewaucKeeper      auctionsV2keeper.Keeper
-	CommonKeeper      commonkeeper.Keeper
 	// auctionKeeper is the keeper that handles processing auction transactions
-	AuctionKeeperSkip  auctionkeeperskip.Keeper
-	TokenFactoryKeeper tokenfactorykeeper.Keeper
-	GaslessKeeper      gaslesskeeper.Keeper
+	AuctionKeeperSkip auctionkeeperskip.Keeper
 
 	// IBC modules
 	// transfer module
@@ -470,7 +450,7 @@ func New(
 			markettypes.StoreKey, bandoraclemoduletypes.StoreKey, lockertypes.StoreKey,
 			wasm.StoreKey, authzkeeper.StoreKey, auctiontypes.StoreKey, tokenminttypes.StoreKey,
 			rewardstypes.StoreKey, feegrant.StoreKey, liquiditytypes.StoreKey, esmtypes.ModuleName, lendtypes.StoreKey,
-			liquidationsV2types.StoreKey, auctionsV2types.StoreKey, commontypes.StoreKey, tokenfactorytypes.StoreKey, gaslesstypes.StoreKey,
+			liquidationsV2types.StoreKey, auctionsV2types.StoreKey,
 			ibchookstypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, auctionmoduleskiptypes.StoreKey,
 		)
 	)
@@ -527,10 +507,7 @@ func New(
 	app.ParamsKeeper.Subspace(liquiditytypes.ModuleName)
 	app.ParamsKeeper.Subspace(rewardstypes.ModuleName)
 	app.ParamsKeeper.Subspace(liquidationsV2types.ModuleName)
-	app.ParamsKeeper.Subspace(tokenfactorytypes.ModuleName)
 	app.ParamsKeeper.Subspace(auctionsV2types.ModuleName)
-	app.ParamsKeeper.Subspace(commontypes.ModuleName)
-	app.ParamsKeeper.Subspace(gaslesstypes.ModuleName)
 	app.ParamsKeeper.Subspace(icqtypes.ModuleName)
 	app.ParamsKeeper.Subspace(packetforwardtypes.ModuleName).WithKeyTable(packetforwardtypes.ParamKeyTable())
 
@@ -550,12 +527,6 @@ func New(
 		app.keys[capabilitytypes.StoreKey],
 		app.mkeys[capabilitytypes.MemStoreKey],
 	)
-
-	var tokenFactoryCapabilities = []string{
-		tokenfactorytypes.EnableBurnFrom,
-		tokenfactorytypes.EnableForceTransfer,
-		tokenfactorytypes.EnableSetMetadata,
-	}
 
 	// grant capabilities for the ibc and ibc-transfer modules
 	var (
@@ -934,26 +905,6 @@ func New(
 		&app.TokenmintKeeper,
 	)
 
-	app.CommonKeeper = commonkeeper.NewKeeper(
-		app.cdc,
-		app.keys[commontypes.StoreKey],
-		app.keys[commontypes.MemStoreKey],
-		app.GetSubspace(commontypes.ModuleName),
-		&app.WasmKeeper,
-		govModAddress,
-	)
-
-	// Create the TokenFactory Keeper
-	app.TokenFactoryKeeper = tokenfactorykeeper.NewKeeper(
-		appCodec,
-		app.keys[tokenfactorytypes.StoreKey],
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.DistrKeeper,
-		tokenFactoryCapabilities,
-		govModAddress,
-	)
-
 	app.AuctionKeeperSkip = auctionkeeperskip.NewKeeper(
 		appCodec,
 		keys[auctionmoduleskiptypes.StoreKey],
@@ -961,17 +912,6 @@ func New(
 		app.BankKeeper,
 		app.DistrKeeper,
 		app.StakingKeeper,
-		govModAddress,
-	)
-
-	app.GaslessKeeper = gaslesskeeper.NewKeeper(
-		app.cdc,
-		app.keys[gaslesstypes.StoreKey],
-		app.GetSubspace(gaslesstypes.ModuleName),
-		app.interfaceRegistry,
-		app.AccountKeeper,
-		app.BankKeeper,
-		&app.WasmKeeper,
 		govModAddress,
 	)
 
@@ -999,9 +939,9 @@ func New(
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
-	supportedFeatures := "iterator,staking,stargate,comdex,cosmwasm_1_1,cosmwasm_1_2,cosmwasm_1_3,token_factory"
+	supportedFeatures := "iterator,staking,stargate,comdex,cosmwasm_1_1,cosmwasm_1_2,cosmwasm_1_3"
 
-	wasmOpts = append(cwasm.RegisterCustomPlugins(&app.LockerKeeper, &app.TokenmintKeeper, &app.AssetKeeper, &app.Rewardskeeper, &app.CollectorKeeper, &app.LiquidationKeeper, &app.AuctionKeeper, &app.EsmKeeper, &app.VaultKeeper, &app.LendKeeper, &app.LiquidityKeeper, &app.MarketKeeper, app.BankKeeper, &app.TokenFactoryKeeper, &app.GaslessKeeper), wasmOpts...)
+	wasmOpts = append(cwasm.RegisterCustomPlugins(&app.LockerKeeper, &app.TokenmintKeeper, &app.AssetKeeper, &app.Rewardskeeper, &app.CollectorKeeper, &app.LiquidationKeeper, &app.AuctionKeeper, &app.EsmKeeper, &app.VaultKeeper, &app.LendKeeper, &app.LiquidityKeeper, &app.MarketKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasmkeeper.NewKeeper(
 		app.cdc,
@@ -1040,8 +980,7 @@ func New(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IbcKeeper.ClientKeeper)).
 		AddRoute(liquiditytypes.RouterKey, liquidity.NewLiquidityProposalHandler(app.LiquidityKeeper)).
 		AddRoute(liquidationsV2types.RouterKey, liquidationsV2.NewLiquidationsV2Handler(app.NewliqKeeper)).
-		AddRoute(auctionsV2types.RouterKey, auctionsV2.NewAuctionsV2Handler(app.NewaucKeeper)).
-		AddRoute(gaslesstypes.RouterKey, gasless.NewGaslessProposalHandler(app.GaslessKeeper))
+		AddRoute(auctionsV2types.RouterKey, auctionsV2.NewAuctionsV2Handler(app.NewaucKeeper))
 
 	if len(wasmEnabledProposals) != 0 {
 		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, wasmEnabledProposals))
@@ -1147,10 +1086,7 @@ func New(
 		liquidity.NewAppModule(app.cdc, app.LiquidityKeeper, app.AccountKeeper, app.BankKeeper, app.AssetKeeper),
 		rewards.NewAppModule(app.cdc, app.Rewardskeeper, app.AccountKeeper, app.BankKeeper),
 		liquidationsV2.NewAppModule(app.cdc, app.NewliqKeeper, app.AccountKeeper, app.BankKeeper),
-		common.NewAppModule(app.cdc, app.CommonKeeper, app.AccountKeeper, app.BankKeeper, app.WasmKeeper),
 		auctionsV2.NewAppModule(app.cdc, app.NewaucKeeper, app.BankKeeper),
-		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
-		gasless.NewAppModule(app.cdc, app.GaslessKeeper, app.AccountKeeper, app.BankKeeper),
 		ibchooks.NewAppModule(app.AccountKeeper),
 		icq.NewAppModule(*app.ICQKeeper),
 		packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
@@ -1197,9 +1133,6 @@ func New(
 		esmtypes.ModuleName,
 		liquidationsV2types.ModuleName,
 		auctionsV2types.ModuleName,
-		commontypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		gaslesstypes.ModuleName,
 		ibchookstypes.ModuleName,
 		icqtypes.ModuleName,
 		packetforwardtypes.ModuleName,
@@ -1244,9 +1177,6 @@ func New(
 		esmtypes.ModuleName,
 		liquidationsV2types.ModuleName,
 		auctionsV2types.ModuleName,
-		commontypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		gaslesstypes.ModuleName,
 		ibchookstypes.ModuleName,
 		icqtypes.ModuleName,
 		packetforwardtypes.ModuleName,
@@ -1295,9 +1225,6 @@ func New(
 		crisistypes.ModuleName,
 		liquidationsV2types.ModuleName,
 		auctionsV2types.ModuleName,
-		commontypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		gaslesstypes.ModuleName,
 		ibchookstypes.ModuleName,
 		icqtypes.ModuleName,
 		packetforwardtypes.ModuleName,
@@ -1360,8 +1287,6 @@ func New(
 			TxDecoder:         encoding.TxConfig.TxDecoder(),
 			TxEncoder:         encoding.TxConfig.TxEncoder(),
 			auctionkeeperskip: app.AuctionKeeperSkip,
-			GaslessKeeper:     app.GaslessKeeper,
-			BankKeeper:        app.BankKeeper,
 		},
 	)
 	if err != nil {
@@ -1607,7 +1532,7 @@ func (a *App) RegisterNodeService(clientCtx client.Context) {
 
 func (a *App) ModuleAccountsPermissions() map[string][]string {
 	return map[string][]string{
-		authtypes.FeeCollectorName:        {authtypes.Burner},
+		authtypes.FeeCollectorName:        nil,
 		distrtypes.ModuleName:             nil,
 		govtypes.ModuleName:               {authtypes.Burner},
 		ibctransfertypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
@@ -1638,9 +1563,6 @@ func (a *App) ModuleAccountsPermissions() map[string][]string {
 		rewardstypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
 		liquidationsV2types.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		auctionsV2types.ModuleName:        {authtypes.Minter, authtypes.Burner},
-		tokenfactorytypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
-		commontypes.ModuleName:            nil,
-		gaslesstypes.ModuleName:           nil,
 		icatypes.ModuleName:               nil,
 		ibcfeetypes.ModuleName:            nil,
 		assettypes.ModuleName:             nil,
@@ -1652,7 +1574,7 @@ func (a *App) ModuleAccountsPermissions() map[string][]string {
 func (a *App) registerUpgradeHandlers() {
 	a.UpgradeKeeper.SetUpgradeHandler(
 		tv14.UpgradeName,
-		tv14.CreateUpgradeHandlerV14(a.mm, a.configurator, a.CommonKeeper, a.AuctionKeeperSkip, a.LendKeeper, a.TokenFactoryKeeper, a.AccountKeeper),
+		tv14.CreateUpgradeHandlerV14(a.mm, a.configurator, a.AuctionKeeperSkip, a.LendKeeper),
 	)
 	// When a planned update height is reached, the old binary will panic
 	// writing on disk the height and name of the update that triggered it
@@ -1689,10 +1611,7 @@ func upgradeHandlers(upgradeInfo upgradetypes.Plan, a *App, storeUpgrades *store
 	case upgradeInfo.Name == tv14.UpgradeName && !a.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height):
 		storeUpgrades = &storetypes.StoreUpgrades{
 			Added: []string{
-				commontypes.StoreKey,
 				auctionmoduleskiptypes.StoreKey,
-				tokenfactorytypes.ModuleName,
-				gaslesstypes.ModuleName,
 			},
 		}
 	}

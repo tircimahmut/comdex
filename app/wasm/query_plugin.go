@@ -3,12 +3,9 @@ package wasm
 import (
 	errorsmod "cosmossdk.io/errors"
 	"encoding/json"
-	"fmt"
-
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/comdex-official/comdex/app/wasm/bindings"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func CustomQuerier(queryPlugin *QueryPlugin) func(ctx sdk.Context, request json.RawMessage) ([]byte, error) {
@@ -368,98 +365,8 @@ func CustomQuerier(queryPlugin *QueryPlugin) func(ctx sdk.Context, request json.
 				return nil, errorsmod.Wrap(err, "GetAssetPrice query response")
 			}
 			return bz, nil
-		case contractQuery.FullDenom != nil:
-			creator := contractQuery.FullDenom.CreatorAddr
-			subdenom := contractQuery.FullDenom.Subdenom
-
-			fullDenom, err := GetFullDenom(creator, subdenom)
-			if err != nil {
-				return nil, errorsmod.Wrap(err, "osmo full denom query")
-			}
-
-			res := bindings.FullDenomResponse{
-				Denom: fullDenom,
-			}
-
-			bz, err := json.Marshal(res)
-			if err != nil {
-				return nil, errorsmod.Wrap(err, "failed to marshal FullDenomResponse")
-			}
-
-			return bz, nil
-
-		case contractQuery.Admin != nil:
-			res, err := queryPlugin.GetDenomAdmin(ctx, contractQuery.Admin.Denom)
-			if err != nil {
-				return nil, err
-			}
-
-			bz, err := json.Marshal(res)
-			if err != nil {
-				return nil, fmt.Errorf("failed to JSON marshal AdminResponse: %w", err)
-			}
-
-			return bz, nil
-
-		case contractQuery.Metadata != nil:
-			res, err := queryPlugin.GetMetadata(ctx, contractQuery.Metadata.Denom)
-			if err != nil {
-				return nil, err
-			}
-
-			bz, err := json.Marshal(res)
-			if err != nil {
-				return nil, fmt.Errorf("failed to JSON marshal MetadataResponse: %w", err)
-			}
-
-			return bz, nil
-
-		case contractQuery.DenomsByCreator != nil:
-			res, err := queryPlugin.GetDenomsByCreator(ctx, contractQuery.DenomsByCreator.Creator)
-			if err != nil {
-				return nil, err
-			}
-
-			bz, err := json.Marshal(res)
-			if err != nil {
-				return nil, fmt.Errorf("failed to JSON marshal DenomsByCreatorResponse: %w", err)
-			}
-
-			return bz, nil
-
-		case contractQuery.Params != nil:
-			res, err := queryPlugin.GetParams(ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			bz, err := json.Marshal(res)
-			if err != nil {
-				return nil, fmt.Errorf("failed to JSON marshal ParamsResponse: %w", err)
-			}
-
-			return bz, nil
 
 		}
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown App Data query variant"}
-	}
-}
-
-// ConvertSdkCoinsToWasmCoins converts sdk type coins to wasm vm type coins
-func ConvertSdkCoinsToWasmCoins(coins []sdk.Coin) wasmvmtypes.Coins {
-	var toSend wasmvmtypes.Coins
-	for _, coin := range coins {
-		c := ConvertSdkCoinToWasmCoin(coin)
-		toSend = append(toSend, c)
-	}
-	return toSend
-}
-
-// ConvertSdkCoinToWasmCoin converts a sdk type coin to a wasm vm type coin
-func ConvertSdkCoinToWasmCoin(coin sdk.Coin) wasmvmtypes.Coin {
-	return wasmvmtypes.Coin{
-		Denom: coin.Denom,
-		// Note: tokenfactory tokens have 18 decimal places, so 10^22 is common, no longer in u64 range
-		Amount: coin.Amount.String(),
 	}
 }
