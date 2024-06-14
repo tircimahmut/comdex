@@ -9,6 +9,16 @@ import (
 	mevlane "github.com/skip-mev/block-sdk/lanes/mev"
 )
 
+const (
+	maxTxPerTopOfBlockAuctionLane = 500  // this is the maximum # of bids that will be held in the app-side in-memory mempool
+	maxTxPerDefaultLane           = 3000 // all other txs
+)
+
+var (
+	defaultLaneBlockspacePercentage           = math.LegacyMustNewDecFromStr("0.90")
+	topOfBlockAuctionLaneBlockspacePercentage = math.LegacyMustNewDecFromStr("0.10")
+)
+
 // CreateLanes walks through the process of creating the lanes for the block sdk. In this function
 // we create three separate lanes - MEV, Free, and Default - and then return them.
 //
@@ -32,9 +42,9 @@ func CreateLanes(app *App) (*mevlane.MEVLane, *base.BaseLane) {
 		Logger:          app.Logger(),
 		TxEncoder:       encodingConfig.TxConfig.TxEncoder(),
 		TxDecoder:       encodingConfig.TxConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.1"),
+		MaxBlockSpace:   topOfBlockAuctionLaneBlockspacePercentage,
 		SignerExtractor: signerAdapter,
-		MaxTxs:          0,
+		MaxTxs:          maxTxPerTopOfBlockAuctionLane,
 	}
 
 	// Create a default configuration that accepts 1000 transactions and consumes 60% of the
@@ -43,9 +53,9 @@ func CreateLanes(app *App) (*mevlane.MEVLane, *base.BaseLane) {
 		Logger:          app.Logger(),
 		TxEncoder:       encodingConfig.TxConfig.TxEncoder(),
 		TxDecoder:       encodingConfig.TxConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.9"),
+		MaxBlockSpace:   defaultLaneBlockspacePercentage,
 		SignerExtractor: signerAdapter,
-		MaxTxs:          0,
+		MaxTxs:          maxTxPerDefaultLane,
 	}
 
 	// 3. Create the match handlers for each lane. These match handlers determine whether or not
