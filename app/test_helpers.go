@@ -54,7 +54,7 @@ func MakeTestEncodingConfig() moduletestutil.TestEncodingConfig {
 func setup(_ *testing.T, withGenesis bool) (*App, GenesisState) {
 	db := dbm.NewMemDB()
 	//encCdc := MakeTestEncodingConfig()
-	app := New(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, MakeEncodingConfig(), simtestutil.EmptyAppOptions{}, GetWasmEnabledProposals(), EmptyWasmOpts)
+	app := New(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, MakeEncodingConfig(), simtestutil.EmptyAppOptions{}, EmptyWasmOpts)
 	if withGenesis {
 		return app, NewDefaultGenesisState(app.AppCodec())
 	}
