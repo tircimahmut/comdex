@@ -5,14 +5,14 @@ go 1.21.7
 require (
 	cosmossdk.io/api v0.3.1
 	cosmossdk.io/errors v1.0.1
-	cosmossdk.io/math v1.3.0
+	cosmossdk.io/math v1.2.0
 	github.com/CosmWasm/wasmd v0.45.0
 	github.com/CosmWasm/wasmvm v1.5.0
 	github.com/bandprotocol/bandchain-packet v0.0.3
 	github.com/cometbft/cometbft v0.37.5
 	github.com/cometbft/cometbft-db v0.11.0
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
-	github.com/cosmos/cosmos-sdk v0.47.12
+	github.com/cosmos/cosmos-sdk v0.47.9
 	github.com/cosmos/gogoproto v1.4.10
 	github.com/cosmos/ibc-apps/modules/async-icq/v7 v7.0.0
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20231017170841-8fd49ec0f017
