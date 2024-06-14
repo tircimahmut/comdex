@@ -21,11 +21,6 @@ import (
 	"time"
 )
 
-// func SetupCustomApp(t *testing.T) (*app.App, *sdk.Context) {
-// 	comdex, ctx := CreateTestInput(t)
-// 	return comdex, ctx
-// }
-
 func SetupCustomApp(t *testing.T, addr sdk.AccAddress) (*app.App, *sdk.Context) {
 	comdexApp, ctx := CreateTestInput(t)
 	wasmKeeper := comdexApp.WasmKeeper
@@ -39,7 +34,7 @@ func SetupCustomApp(t *testing.T, addr sdk.AccAddress) (*app.App, *sdk.Context) 
 }
 
 func storeReflectCode(t *testing.T, ctx sdk.Context, comdexApp *app.App, addr sdk.AccAddress) uint64 {
-	wasmCode, err := os.ReadFile("../testdata/token_reflect.wasm")
+	wasmCode, err := os.ReadFile("../testdata/counter.wasm")
 	require.NoError(t, err)
 
 	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(comdexApp.WasmKeeper)
@@ -103,10 +98,10 @@ func AddAppAsset(app *app.App, ctx1 sdk.Context) {
 		GovTimeInSeconds: 900,
 		GenesisToken: []assetTypes.MintGenesisToken{
 			{
-				3,
-				genesisSupply,
-				true,
-				userAddress,
+				AssetId:       3,
+				GenesisSupply: genesisSupply,
+				IsGovToken:    true,
+				Recipient:     userAddress,
 			},
 		},
 	}

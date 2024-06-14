@@ -2,10 +2,8 @@ package keeper
 
 import (
 	"context"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/comdex-official/comdex/x/bandoracle/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ types.QueryServer = Keeper{}
@@ -19,19 +17,19 @@ func (k Keeper) FetchPriceResult(c context.Context, req *types.QueryFetchPriceRe
 	return &types.QueryFetchPriceResponse{Result: &result}, nil
 }
 
-func (k Keeper) LastFetchPriceID(c context.Context, req *types.QueryLastFetchPriceIdRequest) (*types.QueryLastFetchPriceIdResponse, error) {
+func (k Keeper) LastFetchPriceID(c context.Context, _ *types.QueryLastFetchPriceIdRequest) (*types.QueryLastFetchPriceIdResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	id := k.GetLastFetchPriceID(ctx)
 	return &types.QueryLastFetchPriceIdResponse{RequestId: id}, nil
 }
 
-func (k Keeper) FetchPriceData(c context.Context, req *types.QueryFetchPriceDataRequest) (*types.QueryFetchPriceDataResponse, error) {
+func (k Keeper) FetchPriceData(c context.Context, _ *types.QueryFetchPriceDataRequest) (*types.QueryFetchPriceDataResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	data := k.GetFetchPriceMsg(ctx)
 	return &types.QueryFetchPriceDataResponse{MsgFetchPriceData: data}, nil
 }
 
-func (k Keeper) DiscardData(c context.Context, req *types.QueryDiscardDataRequest) (*types.QueryDiscardDataResponse, error) {
+func (k Keeper) DiscardData(c context.Context, _ *types.QueryDiscardDataRequest) (*types.QueryDiscardDataResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	dd := k.GetDiscardData(ctx)
 	return &types.QueryDiscardDataResponse{DiscardData: dd}, nil

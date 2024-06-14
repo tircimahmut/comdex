@@ -1,6 +1,7 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -28,16 +29,16 @@ func (m *MsgMintNewTokensRequest) Type() string {
 
 func (m *MsgMintNewTokensRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if m.AppId == 0 {
-		return errors.Wrap(ErrorInvalidAppID, "app id can not be zero")
+		return errorsmod.Wrap(ErrorInvalidAppID, "app id can not be zero")
 	}
 	if m.AssetId == 0 {
-		return errors.Wrap(ErrorInvalidAssetID, "asset id can not be zero")
+		return errorsmod.Wrap(ErrorInvalidAssetID, "asset id can not be zero")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 
 	return nil
@@ -58,8 +59,8 @@ func (m *MsgMintNewTokensRequest) GetSigners() []sdk.AccAddress {
 
 func NewMsgBurnHarborTokensRequest(from string, appID uint64, burnCoin sdk.Coin) *MsgBurnHarborTokensRequest {
 	return &MsgBurnHarborTokensRequest{
-		From:   from,
-		AppId: appID,
+		From:      from,
+		AppId:     appID,
 		BurnCoins: burnCoin,
 	}
 }
@@ -74,16 +75,16 @@ func (m *MsgBurnHarborTokensRequest) Type() string {
 
 func (m *MsgBurnHarborTokensRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
-	if m.AppId == 0 || m.AppId < 0 {
-		return errors.Wrap(ErrorInvalidAppID, "app id can not be zero or negative")
+	if m.AppId == 0 {
+		return errorsmod.Wrap(ErrorInvalidAppID, "app id can not be zero or negative")
 	}
 	if !m.BurnCoins.IsValid() {
-		return errors.Wrapf(errors.ErrInvalidCoins, "bid amount %s", m.BurnCoins)
+		return errorsmod.Wrapf(errors.ErrInvalidCoins, "bid amount %s", m.BurnCoins)
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 
 	return nil

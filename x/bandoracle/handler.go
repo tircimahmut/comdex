@@ -1,16 +1,13 @@
 package bandoracle
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"fmt"
-
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	"github.com/pkg/errors"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"github.com/comdex-official/comdex/x/bandoracle/keeper"
 	"github.com/comdex-official/comdex/x/bandoracle/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 )
 
 // NewHandler ...
@@ -19,7 +16,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
-			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
+			return nil, errorsmod.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
 		}
 	}
 }
@@ -31,7 +28,7 @@ func NewFetchPriceHandler(k keeper.Keeper) govtypes.Handler {
 			return handleFetchPriceProposal(ctx, k, c)
 
 		default:
-			return errors.Wrapf(types.ErrorUnknownProposalType, "%T", c)
+			return errorsmod.Wrapf(types.ErrorUnknownProposalType, "%T", c)
 		}
 	}
 }

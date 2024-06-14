@@ -3,6 +3,7 @@ package keeper
 import (
 	"time"
 
+	errorsmod "cosmossdk.io/errors"
 	esmtypes "github.com/comdex-official/comdex/x/esm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -298,7 +299,7 @@ func (k Keeper) PlaceSurplusAuctionBid(ctx sdk.Context, appID, auctionMappingID,
 		change := auction.BidFactor.MulInt(auction.Bid.Amount).Ceil().TruncateInt()
 		minBidAmount := auction.Bid.Amount.Add(change)
 		if bid.Amount.LT(minBidAmount) {
-			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "bid should be greater than or equal to %d ", minBidAmount)
+			return errorsmod.Wrapf(sdkerrors.ErrNotFound, "bid should be greater than or equal to %d ", minBidAmount)
 		}
 	} else {
 		if bid.Amount.LTE(auction.Bid.Amount) {

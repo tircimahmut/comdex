@@ -82,7 +82,6 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	govtypesv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
@@ -219,15 +218,15 @@ const (
 
 // GetWasmEnabledProposals parses the WasmProposalsEnabled / EnableSpecificWasmProposals values to
 // produce a list of enabled proposals to pass into wasmd app.
-func GetWasmEnabledProposals() []wasm.ProposalType {
+func GetWasmEnabledProposals() []wasmtypes.ProposalType {
 	if EnableSpecificWasmProposals == "" {
 		if WasmProposalsEnabled == "true" {
-			return wasm.EnableAllProposals
+			return wasmtypes.EnableAllProposals
 		}
-		return wasm.DisableAllProposals
+		return wasmtypes.DisableAllProposals
 	}
 	chunks := strings.Split(EnableSpecificWasmProposals, ",")
-	proposals, err := wasm.ConvertToProposals(chunks)
+	proposals, err := wasmtypes.ConvertToProposals(chunks)
 	if err != nil {
 		panic(err)
 	}
@@ -273,7 +272,7 @@ var (
 	// https://github.com/CosmWasm/wasmd/blob/02a54d33ff2c064f3539ae12d75d027d9c665f05/x/wasm/internal/types/proposal.go#L28-L34
 	EnableSpecificWasmProposals = ""
 	// use this for clarity in argument list
-	EmptyWasmOpts []wasm.Option
+	EmptyWasmOpts []wasmkeeper.Option
 	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration
 	// and genesis verification.
@@ -412,7 +411,7 @@ type App struct {
 
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
-	WasmKeeper     wasm.Keeper
+	WasmKeeper     wasmkeeper.Keeper
 	ContractKeeper *wasmkeeper.PermissionedKeeper
 	// Custom checkTx handler
 	checkTxHandler checktx.CheckTx
@@ -433,8 +432,8 @@ func New(
 	invCheckPeriod uint,
 	encoding EncodingConfig,
 	appOptions servertypes.AppOptions,
-	wasmEnabledProposals []wasm.ProposalType,
-	wasmOpts []wasm.Option,
+	wasmEnabledProposals []wasmtypes.ProposalType,
+	wasmOpts []wasmkeeper.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	appCodec := encoding.Marshaler
@@ -448,7 +447,7 @@ func New(
 			evidencetypes.StoreKey, ibctransfertypes.StoreKey, ibcfeetypes.StoreKey, capabilitytypes.StoreKey,
 			vaulttypes.StoreKey, assettypes.StoreKey, collectortypes.StoreKey, liquidationtypes.StoreKey,
 			markettypes.StoreKey, bandoraclemoduletypes.StoreKey, lockertypes.StoreKey,
-			wasm.StoreKey, authzkeeper.StoreKey, auctiontypes.StoreKey, tokenminttypes.StoreKey,
+			wasmtypes.StoreKey, authzkeeper.StoreKey, auctiontypes.StoreKey, tokenminttypes.StoreKey,
 			rewardstypes.StoreKey, feegrant.StoreKey, liquiditytypes.StoreKey, esmtypes.ModuleName, lendtypes.StoreKey,
 			liquidationsV2types.StoreKey, auctionsV2types.StoreKey,
 			ibchookstypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, auctionmoduleskiptypes.StoreKey,
@@ -481,14 +480,14 @@ func New(
 	)
 
 	//nolint:godox  //TODO: refactor this code
-	app.ParamsKeeper.Subspace(authtypes.ModuleName).WithKeyTable(authtypes.ParamKeyTable())
-	app.ParamsKeeper.Subspace(banktypes.ModuleName).WithKeyTable(banktypes.ParamKeyTable())
-	app.ParamsKeeper.Subspace(stakingtypes.ModuleName).WithKeyTable(stakingtypes.ParamKeyTable())
-	app.ParamsKeeper.Subspace(minttypes.ModuleName).WithKeyTable(minttypes.ParamKeyTable())
-	app.ParamsKeeper.Subspace(distrtypes.ModuleName).WithKeyTable(distrtypes.ParamKeyTable())
-	app.ParamsKeeper.Subspace(slashingtypes.ModuleName).WithKeyTable(slashingtypes.ParamKeyTable())
-	app.ParamsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypesv1.ParamKeyTable())
-	app.ParamsKeeper.Subspace(crisistypes.ModuleName).WithKeyTable(crisistypes.ParamKeyTable())
+	app.ParamsKeeper.Subspace(authtypes.ModuleName)
+	app.ParamsKeeper.Subspace(banktypes.ModuleName)
+	app.ParamsKeeper.Subspace(stakingtypes.ModuleName)
+	app.ParamsKeeper.Subspace(minttypes.ModuleName)
+	app.ParamsKeeper.Subspace(distrtypes.ModuleName)
+	app.ParamsKeeper.Subspace(slashingtypes.ModuleName)
+	app.ParamsKeeper.Subspace(govtypes.ModuleName)
+	app.ParamsKeeper.Subspace(crisistypes.ModuleName)
 	app.ParamsKeeper.Subspace(ibctransfertypes.ModuleName)
 	app.ParamsKeeper.Subspace(ibchost.ModuleName)
 	app.ParamsKeeper.Subspace(icahosttypes.SubModuleName)
@@ -501,7 +500,7 @@ func New(
 	app.ParamsKeeper.Subspace(liquidationtypes.ModuleName)
 	app.ParamsKeeper.Subspace(lockertypes.ModuleName)
 	app.ParamsKeeper.Subspace(bandoraclemoduletypes.ModuleName)
-	app.ParamsKeeper.Subspace(wasmtypes.ModuleName).WithKeyTable(wasmtypes.ParamKeyTable())
+	app.ParamsKeeper.Subspace(wasmtypes.ModuleName)
 	app.ParamsKeeper.Subspace(auctiontypes.ModuleName)
 	app.ParamsKeeper.Subspace(tokenminttypes.ModuleName)
 	app.ParamsKeeper.Subspace(liquiditytypes.ModuleName)
@@ -511,12 +510,6 @@ func New(
 	app.ParamsKeeper.Subspace(icqtypes.ModuleName)
 	app.ParamsKeeper.Subspace(packetforwardtypes.ModuleName).WithKeyTable(packetforwardtypes.ParamKeyTable())
 
-	// set the BaseApp's parameter store
-	// baseApp.SetParamStore(
-	// 	app.ParamsKeeper.
-	// 		Subspace(baseapp.Paramspace).
-	// 		WithKeyTable(paramskeeper.ConsensusParamsKeyTable()),
-	// )
 	govModAddress := authtypes.NewModuleAddress(govtypes.ModuleName).String()
 	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], govModAddress)
 	baseApp.SetParamStore(&app.ConsensusParamsKeeper)
@@ -533,7 +526,7 @@ func New(
 		scopedIBCKeeper        = app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
 		scopedTransferKeeper   = app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 		scopedIBCOracleKeeper  = app.CapabilityKeeper.ScopeToModule(markettypes.ModuleName) // can remove it
-		scopedWasmKeeper       = app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
+		scopedWasmKeeper       = app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 		scopedICAHostKeeper    = app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 		scopedBandoracleKeeper = app.CapabilityKeeper.ScopeToModule(bandoraclemoduletypes.ModuleName)
 		scopedICQKeeper        = app.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
@@ -983,7 +976,7 @@ func New(
 		AddRoute(auctionsV2types.RouterKey, auctionsV2.NewAuctionsV2Handler(app.NewaucKeeper))
 
 	if len(wasmEnabledProposals) != 0 {
-		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, wasmEnabledProposals))
+		govRouter.AddRoute(wasmtypes.RouterKey, wasmkeeper.NewWasmProposalHandler(app.WasmKeeper, wasmEnabledProposals))
 	}
 
 	govKeeper := govkeeper.NewKeeper(
@@ -1027,7 +1020,7 @@ func New(
 
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
 	ibcRouter.AddRoute(bandoraclemoduletypes.ModuleName, bandOracleIBCModule)
-	ibcRouter.AddRoute(wasm.ModuleName, wasmStack)
+	ibcRouter.AddRoute(wasmtypes.ModuleName, wasmStack)
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack)
 	ibcRouter.AddRoute(icqtypes.ModuleName, icqModule)
 	app.IbcKeeper.SetRouter(ibcRouter)
@@ -1281,7 +1274,7 @@ func New(
 			},
 			GovKeeper:         app.GovKeeper,
 			wasmConfig:        wasmConfig,
-			txCounterStoreKey: app.GetKey(wasm.StoreKey),
+			txCounterStoreKey: app.GetKey(wasmtypes.StoreKey),
 			IBCChannelKeeper:  app.IbcKeeper,
 			Cdc:               appCodec,
 			MEVLane:           mevLane,
@@ -1559,7 +1552,7 @@ func (a *App) ModuleAccountsPermissions() map[string][]string {
 		auctiontypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
 		lockertypes.ModuleName:            {authtypes.Minter, authtypes.Burner},
 		esmtypes.ModuleName:               {authtypes.Burner},
-		wasm.ModuleName:                   {authtypes.Burner},
+		wasmtypes.ModuleName:              {authtypes.Burner},
 		liquiditytypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
 		rewardstypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
 		liquidationsV2types.ModuleName:    {authtypes.Minter, authtypes.Burner},

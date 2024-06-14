@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	assettypes "github.com/comdex-official/comdex/x/asset/types"
 	"github.com/comdex-official/comdex/x/auctionsV2/types"
 	auctionsV2types "github.com/comdex-official/comdex/x/auctionsV2/types"
@@ -351,11 +352,11 @@ func (k Keeper) PlaceEnglishAuctionBid(ctx sdk.Context, auctionID uint64, bidder
 		if liquidationData.InitiatorType == "debt" {
 			bidAmount = tokenLastBid.Amount.Sub(change)
 			if bid.Amount.GT(bidAmount) {
-				return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "bid should be less than or equal to %d ", bidAmount.Uint64())
+				return errorsmod.Wrapf(sdkerrors.ErrNotFound, "bid should be less than or equal to %d ", bidAmount.Uint64())
 			}
 		} else {
 			if bid.Amount.LT(bidAmount) {
-				return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "bid should be greater than or equal to %d ", bidAmount.Uint64())
+				return errorsmod.Wrapf(sdkerrors.ErrNotFound, "bid should be greater than or equal to %d ", bidAmount.Uint64())
 			}
 		}
 	} else {

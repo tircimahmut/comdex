@@ -8,7 +8,7 @@ import (
 	"github.com/comdex-official/comdex/x/asset/keeper"
 )
 
-func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k keeper.Keeper) {
+func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, _ keeper.Keeper) {
 	_ = utils.ApplyFuncIfNoError(ctx, func(ctx sdk.Context) error {
 		return nil
 	})

@@ -2,10 +2,9 @@ package types
 
 import (
 	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	errorsmod "github.com/pkg/errors"
 )
 
 var (
@@ -52,7 +51,7 @@ func (k Params) Validate() error {
 	}
 	for _, addr := range k.Admin {
 		if _, err := sdk.AccAddressFromBech32(addr); err != nil {
-			return errors.Wrapf(err, "invalid admin %s", addr)
+			return errorsmod.Wrapf(err, "invalid admin %s", addr)
 		}
 	}
 

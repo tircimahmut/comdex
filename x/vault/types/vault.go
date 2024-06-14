@@ -2,9 +2,8 @@ package types
 
 import (
 	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "github.com/pkg/errors"
 )
 
 const (
@@ -28,7 +27,7 @@ func (m *Vault) Validate() error {
 		return fmt.Errorf("owner cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.Owner); err != nil {
-		return errors.Wrapf(err, "invalid owner %s", m.Owner)
+		return errorsmod.Wrapf(err, "invalid owner %s", m.Owner)
 	}
 	if m.AmountIn.IsNil() {
 		return fmt.Errorf("amount_in cannot be nil")

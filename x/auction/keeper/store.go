@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	protobuftypes "github.com/cosmos/gogoproto/types"
@@ -135,7 +136,7 @@ func (k Keeper) GetAuctionType(ctx sdk.Context, auctionTypeID uint64, appID uint
 		return auctiontypes.DutchString, nil
 	}
 
-	return "", sdkerrors.Wrapf(sdkerrors.ErrNotFound, "auction mapping id %d not found", auctionTypeID)
+	return "", errorsmod.Wrapf(sdkerrors.ErrNotFound, "auction mapping id %d not found", auctionTypeID)
 }
 
 func (k Keeper) GetLendAuctionType(ctx sdk.Context, auctionTypeID uint64, appID uint64) (string, error) {
@@ -149,7 +150,7 @@ func (k Keeper) GetLendAuctionType(ctx sdk.Context, auctionTypeID uint64, appID 
 		return auctiontypes.DutchString, nil
 	}
 
-	return "", sdkerrors.Wrapf(sdkerrors.ErrNotFound, "auction mapping id %d not found", auctionTypeID)
+	return "", errorsmod.Wrapf(sdkerrors.ErrNotFound, "auction mapping id %d not found", auctionTypeID)
 }
 
 func (k Keeper) GetAllAuctions(ctx sdk.Context) (auctions []auctiontypes.SurplusAuction) {

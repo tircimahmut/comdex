@@ -1,7 +1,6 @@
 package wasm
 
 import (
-	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	assetkeeper "github.com/comdex-official/comdex/x/asset/keeper"
 	auctionKeeper "github.com/comdex-official/comdex/x/auction/keeper"
@@ -40,7 +39,7 @@ func RegisterCustomPlugins(
 		CustomMessageDecorator(*locker, *rewards, *asset, *collector, *liquidation, *auction, *tokenMint, *esm, *vault, *liquidity),
 	)
 
-	return []wasm.Option{
+	return []wasmkeeper.Option{
 		appDataQueryPluginOpt,
 		messengerDecoratorOpt,
 	}
