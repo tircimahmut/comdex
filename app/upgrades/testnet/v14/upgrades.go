@@ -1,10 +1,16 @@
 package v14
 
 import (
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	bandoraclemodulekeeper "github.com/comdex-official/comdex/x/bandoracle/keeper"
 	lendkeeper "github.com/comdex-official/comdex/x/lend/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
+	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	auctionkeeperskip "github.com/skip-mev/block-sdk/x/auction/keeper"
 	auctionmoduleskiptypes "github.com/skip-mev/block-sdk/x/auction/types"
@@ -16,6 +22,11 @@ func CreateUpgradeHandlerV14(
 	configurator module.Configurator,
 	auctionkeeperskip auctionkeeperskip.Keeper,
 	lendKeeper lendkeeper.Keeper,
+	wasmKeeper wasmkeeper.Keeper,
+	StakingKeeper stakingkeeper.Keeper,
+	MintKeeper mintkeeper.Keeper,
+	SlashingKeeper slashingkeeper.Keeper,
+	bandoracleKeeper bandoraclemodulekeeper.Keeper,
 
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
@@ -29,6 +40,37 @@ func CreateUpgradeHandlerV14(
 		ctx.Logger().Info("setting default params for MEV module (x/auction)")
 		if err = setDefaultMEVParams(ctx, auctionkeeperskip); err != nil {
 			return nil, err
+		}
+
+		// x/Mint
+		// from 3 seconds to 6 = 1/2x blocks per year
+		mintParams := MintKeeper.GetParams(ctx)
+		mintParams.BlocksPerYear /= 2
+		if err = MintKeeper.SetParams(ctx, mintParams); err != nil {
+			return nil, err
+		}
+		ctx.Logger().Info("updated minted blocks per year logic to %v", mintParams)
+
+		// x/Slashing
+		slashingParams := SlashingKeeper.GetParams(ctx)
+		slashingParams.SignedBlocksWindow /= 2
+		if err := SlashingKeeper.SetParams(ctx, slashingParams); err != nil {
+			return nil, err
+		}
+		ctx.Logger().Info("updated slashing params to %v", slashingParams)
+
+		// update wasm to permission nobody
+		wasmParams := wasmKeeper.GetParams(ctx)
+		wasmParams.CodeUploadAccess = wasmtypes.AllowNobody
+		wasmKeeper.SetParams(ctx, wasmParams)
+		ctx.Logger().Info("updated wasm params to %v", wasmParams)
+
+		// update discard BH of oracle
+		bandData := bandoracleKeeper.GetFetchPriceMsg(ctx)
+		if bandData.Size() > 0 {
+			bandData.AcceptedHeightDiff = 3000
+			bandoracleKeeper.SetFetchPriceMsg(ctx, bandData)
+			ctx.Logger().Info("updated bandData to %v", bandData)
 		}
 
 		//TODO: uncomment this before mainnet upgrade
