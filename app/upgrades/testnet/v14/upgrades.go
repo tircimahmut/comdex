@@ -1,6 +1,7 @@
 package v14
 
 import (
+	"fmt"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	bandoraclemodulekeeper "github.com/comdex-official/comdex/x/bandoracle/keeper"
@@ -32,6 +33,7 @@ func CreateUpgradeHandlerV14(
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 
 		ctx.Logger().Info("Applying test net upgrade - v14.0.0")
+		logger := ctx.Logger().With("upgrade", UpgradeName)
 		vm, err := mm.RunMigrations(ctx, configurator, fromVM)
 		if err != nil {
 			return vm, err
@@ -49,7 +51,7 @@ func CreateUpgradeHandlerV14(
 		if err = MintKeeper.SetParams(ctx, mintParams); err != nil {
 			return nil, err
 		}
-		ctx.Logger().Info("updated minted blocks per year logic to %v", mintParams)
+		logger.Info(fmt.Sprintf("updated minted blocks per year logic to %v", mintParams))
 
 		// x/Slashing
 		slashingParams := SlashingKeeper.GetParams(ctx)
@@ -57,20 +59,20 @@ func CreateUpgradeHandlerV14(
 		if err := SlashingKeeper.SetParams(ctx, slashingParams); err != nil {
 			return nil, err
 		}
-		ctx.Logger().Info("updated slashing params to %v", slashingParams)
+		logger.Info(fmt.Sprintf("updated slashing params to %v", slashingParams))
 
 		// update wasm to permission nobody
 		wasmParams := wasmKeeper.GetParams(ctx)
 		wasmParams.CodeUploadAccess = wasmtypes.AllowNobody
 		wasmKeeper.SetParams(ctx, wasmParams)
-		ctx.Logger().Info("updated wasm params to %v", wasmParams)
+		logger.Info(fmt.Sprintf("updated wasm params to %v", wasmParams))
 
 		// update discard BH of oracle
 		bandData := bandoracleKeeper.GetFetchPriceMsg(ctx)
 		if bandData.Size() > 0 {
 			bandData.AcceptedHeightDiff = 3000
 			bandoracleKeeper.SetFetchPriceMsg(ctx, bandData)
-			ctx.Logger().Info("updated bandData to %v", bandData)
+			logger.Info(fmt.Sprintf("updated bandData to %v", bandData))
 		}
 
 		//TODO: uncomment this before mainnet upgrade
