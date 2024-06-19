@@ -8,7 +8,6 @@ import (
 	lendkeeper "github.com/comdex-official/comdex/x/lend/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
@@ -29,7 +28,6 @@ func CreateUpgradeHandlerV14(
 	MintKeeper mintkeeper.Keeper,
 	SlashingKeeper slashingkeeper.Keeper,
 	bandoracleKeeper bandoraclemodulekeeper.Keeper,
-	accountKeeper authkeeper.AccountKeeper,
 
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
@@ -76,14 +74,6 @@ func CreateUpgradeHandlerV14(
 			bandoracleKeeper.SetFetchPriceMsg(ctx, bandData)
 			logger.Info(fmt.Sprintf("updated bandData to %v", bandData))
 		}
-
-		// update tx size cost per byte
-		authParams := accountKeeper.GetParams(ctx)
-		authParams.TxSizeCostPerByte = authParams.TxSizeCostPerByte * 2
-		if err = accountKeeper.SetParams(ctx, authParams); err != nil {
-			return nil, err
-		}
-		logger.Info(fmt.Sprintf("updated auth params to %v", accountKeeper.GetParams(ctx)))
 
 		//TODO: uncomment this before mainnet upgrade
 		//UpdateLendParams(ctx, lendKeeper)
