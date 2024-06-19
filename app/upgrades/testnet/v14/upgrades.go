@@ -80,7 +80,10 @@ func CreateUpgradeHandlerV14(
 		// update tx size cost per byte
 		authParams := accountKeeper.GetParams(ctx)
 		authParams.TxSizeCostPerByte = authParams.TxSizeCostPerByte * 2
-		accountKeeper.SetParams(ctx, authParams)
+		if err = accountKeeper.SetParams(ctx, authParams); err != nil {
+			return nil, err
+		}
+		logger.Info(fmt.Sprintf("updated auth params to %v", accountKeeper.GetParams(ctx)))
 
 		//TODO: uncomment this before mainnet upgrade
 		//UpdateLendParams(ctx, lendKeeper)
