@@ -14,14 +14,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/std"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
-	// simappparams "cosmossdk.io/simapp/params"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
 
 // DefaultConsensusParams defines the default Tendermint consensus params used in
@@ -52,10 +51,10 @@ func MakeTestEncodingConfig() moduletestutil.TestEncodingConfig {
 	return encodingConfig
 }
 
-func setup(t *testing.T, withGenesis bool) (*App, GenesisState) {
+func setup(_ *testing.T, withGenesis bool) (*App, GenesisState) {
 	db := dbm.NewMemDB()
 	//encCdc := MakeTestEncodingConfig()
-	app := New(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, MakeEncodingConfig(), simtestutil.EmptyAppOptions{}, GetWasmEnabledProposals(), EmptyWasmOpts)
+	app := New(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, MakeEncodingConfig(), simtestutil.EmptyAppOptions{}, EmptyWasmOpts)
 	if withGenesis {
 		return app, NewDefaultGenesisState(app.AppCodec())
 	}

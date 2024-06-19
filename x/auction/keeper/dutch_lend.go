@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	errorsmod "cosmossdk.io/errors"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	lendtypes "github.com/comdex-official/comdex/x/lend/types"
@@ -135,17 +136,17 @@ func (k Keeper) StartLendDutchAuction(
 
 func (k Keeper) PlaceLendDutchAuctionBid(ctx sdk.Context, appID, auctionMappingID, auctionID uint64, bidder sdk.AccAddress, bid sdk.Coin) error {
 	if bid.Amount.Equal(sdk.ZeroInt()) {
-		return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "bid amount can't be Zero")
+		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "bid amount can't be Zero")
 	}
 	auction, err := k.GetDutchLendAuction(ctx, appID, auctionMappingID, auctionID)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "auction id %d not found", auctionID)
+		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "auction id %d not found", auctionID)
 	}
 	if bid.Denom != auction.OutflowTokenCurrentAmount.Denom {
-		return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "bid denom %s not found", bid.Denom)
+		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "bid denom %s not found", bid.Denom)
 	}
 	if bid.Amount.GT(auction.OutflowTokenCurrentAmount.Amount) {
-		return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "bid amount can't be greater than collateral available")
+		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "bid amount can't be greater than collateral available")
 	}
 
 	// slice tells amount of collateral user should be given
@@ -164,7 +165,7 @@ func (k Keeper) PlaceLendDutchAuctionBid(ctx sdk.Context, appID, auctionMappingI
 		return err
 	}
 	if inFlowTokenAmount.LTE(sdk.ZeroInt()) {
-		return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "Calculated Auction Amount is Zero")
+		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "Calculated Auction Amount is Zero")
 	}
 
 	TargetReachedFlag := false
@@ -216,12 +217,12 @@ func (k Keeper) PlaceLendDutchAuctionBid(ctx sdk.Context, appID, auctionMappingI
 	// Dust check for collateral
 	if amountLeftInPUSD.LT(sdk.NewDecFromInt(dust)) && !amountLeftInPUSD.Equal(sdk.ZeroDec()) && !TargetReachedFlag {
 		coll := auction.OutflowTokenCurrentAmount.Amount.Uint64()
-		return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "Either bid all the collateral amount %d (UTOKEN) or bid amount by leaving dust greater than %d USD", coll, dust)
+		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "Either bid all the collateral amount %d (UTOKEN) or bid amount by leaving dust greater than %d USD", coll, dust)
 	}
 
 	// Dust check for debt
 	if amountLeftInPUSDforDebt.LT(sdk.NewDecFromInt(dust)) && !amountLeftInPUSDforDebt.Equal(sdk.ZeroDec()) && !amountLeftInPUSD.Equal(sdk.ZeroDec()) {
-		return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "Minimum amount left to be recovered should not be less than %d ", dust)
+		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "Minimum amount left to be recovered should not be less than %d ", dust)
 	}
 
 	outFlowTokenCoin := sdk.NewCoin(auction.OutflowTokenInitAmount.Denom, slice)
@@ -238,7 +239,7 @@ func (k Keeper) PlaceLendDutchAuctionBid(ctx sdk.Context, appID, auctionMappingI
 
 	// calculating additional auction bonus to the bidder
 
-	auctionBonus := sdk.NewDec(slice.Int64()).Mul(assetStats.LiquidationBonus)
+	auctionBonus := sdk.NewDecFromInt(slice).Mul(assetStats.LiquidationBonus)
 	totalAmountToBidder := sdk.NewCoin(auction.OutflowTokenInitAmount.Denom, slice.Add(auctionBonus.TruncateInt()))
 
 	biddingID, err := k.CreateNewDutchLendBid(ctx, appID, auctionMappingID, auctionID, bidder.String(), inFlowTokenCoin, outFlowTokenCoin)
@@ -288,7 +289,7 @@ func (k Keeper) PlaceLendDutchAuctionBid(ctx sdk.Context, appID, auctionMappingI
 		// get reserve balance if the requiredAmount is available in the reserves or not
 		modBal := k.lend.ModuleBalance(ctx, lendtypes.ModuleName, requiredAmount.Denom)
 		if modBal.LT(requiredAmount.Amount) {
-			return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "Reserve pool having insufficient balance for this bid")
+			return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "Reserve pool having insufficient balance for this bid")
 		}
 
 		// reduce the qty from reserve pool

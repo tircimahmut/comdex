@@ -58,7 +58,6 @@ func DefaultConfig() network.Config {
 				val.GetCtx().Logger, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
 				encoding,
 				simtestutil.EmptyAppOptions{},
-				comdex.GetWasmEnabledProposals(),
 				comdex.EmptyWasmOpts,
 				baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
 				baseapp.SetMinGasPrices(val.GetAppConfig().MinGasPrices),

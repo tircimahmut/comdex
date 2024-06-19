@@ -37,7 +37,7 @@ func NewAppConstructor() networkI.AppConstructor {
 	return func(val networkI.ValidatorI) servertypes.Application {
 		return chain.New(
 			val.GetCtx().Logger, dbm.NewMemDB(), nil, true, make(map[int64]bool), val.GetCtx().Config.RootDir, 0,
-			chain.MakeEncodingConfig(), simtestutil.EmptyAppOptions{}, chain.GetWasmEnabledProposals(), chain.EmptyWasmOpts,
+			chain.MakeEncodingConfig(), simtestutil.EmptyAppOptions{}, chain.EmptyWasmOpts,
 			baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
 			baseapp.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
 		)

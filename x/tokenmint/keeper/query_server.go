@@ -20,7 +20,7 @@ func NewQueryServer(k Keeper) types.QueryServer {
 	}
 }
 
-func (q QueryServer) QueryAllTokenMintedForAllApps(c context.Context, req *types.QueryAllTokenMintedForAllAppsRequest) (*types.QueryAllTokenMintedForAllAppsResponse, error) {
+func (q QueryServer) QueryAllTokenMintedForAllApps(c context.Context, _ *types.QueryAllTokenMintedForAllAppsRequest) (*types.QueryAllTokenMintedForAllAppsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
 	totalMintedData := q.GetTotalTokenMinted(ctx)

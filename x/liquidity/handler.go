@@ -1,13 +1,13 @@
 package liquidity
 
 import (
+	errorsmod "cosmossdk.io/errors"
+	"github.com/comdex-official/comdex/x/liquidity/keeper"
+	"github.com/comdex-official/comdex/x/liquidity/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/pkg/errors"
-
-	"github.com/comdex-official/comdex/x/liquidity/keeper"
-	"github.com/comdex-official/comdex/x/liquidity/types"
 )
 
 // NewHandler returns a new msg handler.
@@ -64,7 +64,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			res, err := msgServer.UnfarmAndWithdraw(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", types.ModuleName, msg)
+			return nil, errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", types.ModuleName, msg)
 		}
 	}
 }

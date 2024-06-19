@@ -1,11 +1,11 @@
 package expected
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
+	sdkmath "cosmossdk.io/math"
 	rewardstypes "github.com/comdex-official/comdex/x/rewards/types"
 	vaulttypes "github.com/comdex-official/comdex/x/vault/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 type AccountKeeper interface {
@@ -22,7 +22,7 @@ type BankKeeper interface {
 
 type RewardsKeeper interface {
 	GetAppIDByApp(ctx sdk.Context, appID uint64) (uint64, bool)
-	CalculationOfRewards(ctx sdk.Context, amount sdk.Int, lsr sdk.Dec, bTime int64) (sdk.Dec, error)
+	CalculationOfRewards(ctx sdk.Context, amount sdkmath.Int, lsr sdk.Dec, bTime int64) (sdkmath.LegacyDec, error)
 	GetVaultInterestTracker(ctx sdk.Context, id, appID uint64) (vault rewardstypes.VaultInterestTracker, found bool)
 	SetVaultInterestTracker(ctx sdk.Context, vault rewardstypes.VaultInterestTracker)
 }

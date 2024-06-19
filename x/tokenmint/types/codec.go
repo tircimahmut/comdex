@@ -10,12 +10,14 @@ import (
 
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgMintNewTokensRequest{}, "comdex/tokenmint/MsgMintNewTokensRequest", nil)
+	cdc.RegisterConcrete(&MsgBurnHarborTokensRequest{}, "comdex/tokenmint/MsgBurnHarborTokensRequest", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&MsgMintNewTokensRequest{},
+		&MsgBurnHarborTokensRequest{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
@@ -29,6 +31,5 @@ var (
 func init() {
 	RegisterLegacyAminoCodec(amino)
 	cryptocodec.RegisterCrypto(amino)
-	// sdk.RegisterLegacyAminoCodec(amino)
 	amino.Seal()
 }

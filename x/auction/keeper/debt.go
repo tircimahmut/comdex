@@ -1,15 +1,13 @@
 package keeper
 
 import (
-	"time"
-
-	esmtypes "github.com/comdex-official/comdex/x/esm/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
+	errorsmod "cosmossdk.io/errors"
 	auctiontypes "github.com/comdex-official/comdex/x/auction/types"
 	collectortypes "github.com/comdex-official/comdex/x/collector/types"
+	esmtypes "github.com/comdex-official/comdex/x/esm/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"time"
 )
 
 func (k Keeper) DebtActivator(ctx sdk.Context, data collectortypes.AppAssetIdToAuctionLookupTable, killSwitchParams esmtypes.KillSwitchParams, status bool) error {
@@ -293,7 +291,7 @@ func (k Keeper) PlaceDebtAuctionBid(ctx sdk.Context, appID, auctionMappingID, au
 		change := auction.BidFactor.MulInt(auction.ExpectedMintedToken.Amount).Ceil().TruncateInt()
 		maxBidAmount := auction.ExpectedMintedToken.Amount.Sub(change)
 		if bid.Amount.GT(maxBidAmount) {
-			return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "bid should be less than or equal to %d ", maxBidAmount.Uint64())
+			return errorsmod.Wrapf(sdkerrors.ErrNotFound, "bid should be less than or equal to %d ", maxBidAmount.Uint64())
 		}
 	} else {
 		if bid.Amount.GT(auction.AuctionedToken.Amount) {

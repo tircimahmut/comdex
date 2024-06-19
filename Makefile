@@ -24,6 +24,7 @@ GOBIN = $(shell go env GOPATH)/bin
 GOARCH = $(shell go env GOARCH)
 GOOS = $(shell go env GOOS)
 GO_MINOR_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f2)
+GO_MINIMUM_MINOR_VERSION = $(shell cat go.mod | grep -E 'go [0-9].[0-9]+' | cut -d ' ' -f2 | cut -d'.' -f2)
 
 export GO111MODULE = on
 
@@ -94,8 +95,8 @@ endif
 #$(info $$BUILD_FLAGS is [$(BUILD_FLAGS)])
 
 check_version:
-ifneq ($(GO_MINOR_VERSION),20)
-	@echo "ERROR: Please upgrade Go version to 1.20+"
+ifneq ($(GO_MINIMUM_MINOR_VERSION),21)
+	@echo "ERROR: Please upgrade Go version to 1.21+"
 	exit 1
 endif
 

@@ -1,13 +1,11 @@
 package keeper
 
 import (
-	"regexp"
-
+	errorsmod "cosmossdk.io/errors"
+	"github.com/comdex-official/comdex/x/asset/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	protobuftypes "github.com/cosmos/gogoproto/types"
-
-	"github.com/comdex-official/comdex/x/asset/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"regexp"
 )
 
 func (k Keeper) SetAssetID(ctx sdk.Context, id uint64) {
@@ -235,7 +233,7 @@ func (k *Keeper) AddMultipleAssetRecords(ctx sdk.Context, records ...types.Asset
 func (k *Keeper) AddAsset(ctx sdk.Context, msg *types.MsgAddAsset) error {
 	params := k.GetParams(ctx)
 	if err := k.bank.SendCoinsFromAccountToModule(ctx, msg.GetCreator(), types.ModuleName, sdk.NewCoins(params.AssetRegisrationFee)); err != nil {
-		return sdkerrors.Wrap(err, "insufficient asset registration fee")
+		return errorsmod.Wrap(err, "insufficient asset registration fee")
 	}
 
 	err := k.AddAssetRecords(ctx, msg.Asset)

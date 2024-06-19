@@ -2,28 +2,23 @@ package testutil
 
 import (
 	"fmt"
-	"testing"
-
-	"github.com/stretchr/testify/suite"
-
 	chain "github.com/comdex-official/comdex/app"
+	"github.com/comdex-official/comdex/testutil/network"
 	"github.com/comdex-official/comdex/x/vault/client/cli"
 	vaultKeeper "github.com/comdex-official/comdex/x/vault/keeper"
 	"github.com/comdex-official/comdex/x/vault/types"
-
-	"github.com/comdex-official/comdex/testutil/network"
+	dbm "github.com/cometbft/cometbft-db"
+	tmcli "github.com/cometbft/cometbft/libs/cli"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
-	// store "github.com/cosmos/cosmos-sdk/store/types"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	networkI "github.com/cosmos/cosmos-sdk/testutil/network"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	dbm "github.com/cometbft/cometbft-db"
-	tmcli "github.com/cometbft/cometbft/libs/cli"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	"github.com/stretchr/testify/suite"
+	"testing"
 )
 
 type VaultIntegrationTestSuite struct {
@@ -41,7 +36,7 @@ func NewAppConstructor() networkI.AppConstructor {
 	return func(val networkI.ValidatorI) servertypes.Application {
 		return chain.New(
 			val.GetCtx().Logger, dbm.NewMemDB(), nil, true, make(map[int64]bool), val.GetCtx().Config.RootDir, 0,
-			chain.MakeEncodingConfig(), simtestutil.EmptyAppOptions{}, chain.GetWasmEnabledProposals(), chain.EmptyWasmOpts,
+			chain.MakeEncodingConfig(), simtestutil.EmptyAppOptions{}, chain.EmptyWasmOpts,
 			baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
 			baseapp.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
 		)

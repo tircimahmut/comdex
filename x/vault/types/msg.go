@@ -1,8 +1,8 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 var (
@@ -16,6 +16,7 @@ var (
 	_ sdk.Msg = (*MsgDepositStableMintRequest)(nil)
 	_ sdk.Msg = (*MsgWithdrawStableMintRequest)(nil)
 	_ sdk.Msg = (*MsgVaultInterestCalcRequest)(nil)
+	_ sdk.Msg = (*MsgWithdrawStableMintControlRequest)(nil)
 )
 
 func NewMsgCreateRequest(
@@ -41,28 +42,28 @@ func (m *MsgCreateRequest) Type() string {
 
 func (m *MsgCreateRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.AmountIn.IsNil() {
-		return errors.Wrap(ErrorInvalidAmountIn, "amount_in cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmountIn, "amount_in cannot be nil")
 	}
 	if m.AmountIn.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmountIn, "amount_in cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmountIn, "amount_in cannot be negative")
 	}
 	if m.AmountIn.IsZero() {
-		return errors.Wrap(ErrorInvalidAmountIn, "amount_in cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmountIn, "amount_in cannot be zero")
 	}
 	if m.AmountOut.IsNil() {
-		return errors.Wrap(ErrorInvalidAmountOut, "amount_out cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmountOut, "amount_out cannot be nil")
 	}
 	if m.AmountOut.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmountOut, "amount_out cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmountOut, "amount_out cannot be negative")
 	}
 	if m.AmountOut.IsZero() {
-		return errors.Wrap(ErrorInvalidAmountOut, "amount_out cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmountOut, "amount_out cannot be zero")
 	}
 
 	return nil
@@ -104,22 +105,22 @@ func (m *MsgDepositRequest) Type() string {
 
 func (m *MsgDepositRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.UserVaultId == 0 {
-		return errors.Wrap(ErrorInvalidID, "id cannot be null")
+		return errorsmod.Wrap(ErrorInvalidID, "id cannot be null")
 	}
 	if m.Amount.IsNil() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be nil")
 	}
 	if m.Amount.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be negative")
 	}
 	if m.Amount.IsZero() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be zero")
 	}
 
 	return nil
@@ -161,22 +162,22 @@ func (m *MsgWithdrawRequest) Type() string {
 
 func (m *MsgWithdrawRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.UserVaultId == 0 {
-		return errors.Wrap(ErrorInvalidID, "id cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidID, "id cannot be zero")
 	}
 	if m.Amount.IsNil() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be nil")
 	}
 	if m.Amount.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be negative")
 	}
 	if m.Amount.IsZero() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be zero")
 	}
 
 	return nil
@@ -218,22 +219,22 @@ func (m *MsgDrawRequest) Type() string {
 
 func (m *MsgDrawRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.UserVaultId == 0 {
-		return errors.Wrap(ErrorInvalidID, "id cannot be null")
+		return errorsmod.Wrap(ErrorInvalidID, "id cannot be null")
 	}
 	if m.Amount.IsNil() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be nil")
 	}
 	if m.Amount.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be negative")
 	}
 	if m.Amount.IsZero() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be zero")
 	}
 
 	return nil
@@ -275,22 +276,22 @@ func (m *MsgRepayRequest) Type() string {
 
 func (m *MsgRepayRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.UserVaultId == 0 {
-		return errors.Wrap(ErrorInvalidID, "id cannot be null")
+		return errorsmod.Wrap(ErrorInvalidID, "id cannot be null")
 	}
 	if m.Amount.IsNil() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be nil")
 	}
 	if m.Amount.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be negative")
 	}
 	if m.Amount.IsZero() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be zero")
 	}
 
 	return nil
@@ -331,13 +332,13 @@ func (m *MsgCloseRequest) Type() string {
 
 func (m *MsgCloseRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.UserVaultId == 0 {
-		return errors.Wrap(ErrorInvalidID, "id cannot be null")
+		return errorsmod.Wrap(ErrorInvalidID, "id cannot be null")
 	}
 
 	return nil
@@ -379,22 +380,22 @@ func (m *MsgDepositAndDrawRequest) Type() string {
 
 func (m *MsgDepositAndDrawRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.UserVaultId == 0 {
-		return errors.Wrap(ErrorInvalidID, "id cannot be null")
+		return errorsmod.Wrap(ErrorInvalidID, "id cannot be null")
 	}
 	if m.Amount.IsNil() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be nil")
 	}
 	if m.Amount.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be negative")
 	}
 	if m.Amount.IsZero() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be zero")
 	}
 
 	return nil
@@ -435,19 +436,19 @@ func (m *MsgCreateStableMintRequest) Type() string {
 
 func (m *MsgCreateStableMintRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.Amount.IsNil() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be nil")
 	}
 	if m.Amount.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be negative")
 	}
 	if m.Amount.IsZero() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be zero")
 	}
 
 	return nil
@@ -489,19 +490,19 @@ func (m *MsgDepositStableMintRequest) Type() string {
 
 func (m *MsgDepositStableMintRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.Amount.IsNil() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be nil")
 	}
 	if m.Amount.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be negative")
 	}
 	if m.Amount.IsZero() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be zero")
 	}
 
 	return nil
@@ -543,19 +544,19 @@ func (m *MsgWithdrawStableMintRequest) Type() string {
 
 func (m *MsgWithdrawStableMintRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 	if m.Amount.IsNil() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be nil")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be nil")
 	}
 	if m.Amount.IsNegative() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be negative")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be negative")
 	}
 	if m.Amount.IsZero() {
-		return errors.Wrap(ErrorInvalidAmount, "amount cannot be zero")
+		return errorsmod.Wrap(ErrorInvalidAmount, "amount cannot be zero")
 	}
 
 	return nil
@@ -595,10 +596,10 @@ func (m *MsgVaultInterestCalcRequest) Type() string {
 
 func (m *MsgVaultInterestCalcRequest) ValidateBasic() error {
 	if m.From == "" {
-		return errors.Wrap(ErrorInvalidFrom, "from cannot be empty")
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
 	}
 	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
-		return errors.Wrapf(ErrorInvalidFrom, "%s", err)
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
 	}
 
 	return nil
@@ -609,6 +610,49 @@ func (m *MsgVaultInterestCalcRequest) GetSignBytes() []byte {
 }
 
 func (m *MsgVaultInterestCalcRequest) GetSigners() []sdk.AccAddress {
+	from, err := sdk.AccAddressFromBech32(m.From)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{from}
+}
+
+func NewMsgWithdrawStableMintControlRequest(
+	from sdk.AccAddress,
+	appID uint64,
+) *MsgWithdrawStableMintControlRequest {
+	return &MsgWithdrawStableMintControlRequest{
+		From:  from.String(),
+		AppId: appID,
+	}
+}
+
+func (m *MsgWithdrawStableMintControlRequest) Route() string {
+	return RouterKey
+}
+
+func (m *MsgWithdrawStableMintControlRequest) Type() string {
+	return TypeMsgWithdrawStableMintControlRequest
+}
+
+func (m *MsgWithdrawStableMintControlRequest) ValidateBasic() error {
+	if m.From == "" {
+		return errorsmod.Wrap(ErrorInvalidFrom, "from cannot be empty")
+	}
+	if _, err := sdk.AccAddressFromBech32(m.From); err != nil {
+		return errorsmod.Wrapf(ErrorInvalidFrom, "%s", err)
+	}
+
+	return nil
+}
+
+func (m *MsgWithdrawStableMintControlRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+}
+
+func (m *MsgWithdrawStableMintControlRequest) GetSigners() []sdk.AccAddress {
+
 	from, err := sdk.AccAddressFromBech32(m.From)
 	if err != nil {
 		panic(err)

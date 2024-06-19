@@ -1,12 +1,10 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"fmt"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"github.com/comdex-official/comdex/x/lend/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // IterateLends To calculate pending rewards from last interaction
@@ -192,7 +190,7 @@ func (k Keeper) CalculateStableInterest(ctx sdk.Context, amount string, borrow t
 	}
 	secondsElapsed := currentTime - prevInterestTime
 	if secondsElapsed < int64(types.Uint64Zero) {
-		return sdk.ZeroDec(), sdkerrors.Wrap(types.ErrNegativeTimeElapsed, fmt.Sprintf("%d seconds", secondsElapsed))
+		return sdk.ZeroDec(), errorsmod.Wrap(types.ErrNegativeTimeElapsed, fmt.Sprintf("%d seconds", secondsElapsed))
 	}
 	yearsElapsed := sdk.NewDec(secondsElapsed).QuoInt64(types.SecondsPerYear)
 	amt, _ := sdk.NewDecFromStr(amount)
@@ -211,7 +209,7 @@ func (k Keeper) CalculateLendReward(ctx sdk.Context, amount string, rate sdk.Dec
 	}
 	secondsElapsed := currentTime - prevInterestTime
 	if secondsElapsed < int64(types.Uint64Zero) {
-		return sdk.ZeroDec(), sdk.ZeroDec(), sdkerrors.Wrap(types.ErrNegativeTimeElapsed, fmt.Sprintf("%d seconds", secondsElapsed))
+		return sdk.ZeroDec(), sdk.ZeroDec(), errorsmod.Wrap(types.ErrNegativeTimeElapsed, fmt.Sprintf("%d seconds", secondsElapsed))
 	}
 	yearsElapsed := sdk.NewDec(secondsElapsed).QuoInt64(types.SecondsPerYear)
 	amt, _ := sdk.NewDecFromStr(amount)
@@ -237,7 +235,7 @@ func (k Keeper) CalculateBorrowInterest(ctx sdk.Context, amount string, rate, re
 	}
 	secondsElapsed := currentTime - prevInterestTime
 	if secondsElapsed < int64(types.Uint64Zero) {
-		return sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(), sdkerrors.Wrap(types.ErrNegativeTimeElapsed, fmt.Sprintf("%d seconds", secondsElapsed))
+		return sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(), errorsmod.Wrap(types.ErrNegativeTimeElapsed, fmt.Sprintf("%d seconds", secondsElapsed))
 	}
 	yearsElapsed := sdk.NewDec(secondsElapsed).QuoInt64(types.SecondsPerYear)
 	amt, _ := sdk.NewDecFromStr(amount)
