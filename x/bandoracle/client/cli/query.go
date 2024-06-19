@@ -47,7 +47,7 @@ func CmdLastFetchPriceID() *cobra.Command {
 		Use:   "last-fetch-price-id",
 		Short: "Query the last request id returned by FetchPrice ack packet",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
@@ -73,7 +73,7 @@ func CmdFetchPriceData() *cobra.Command {
 		Use:   "fetch_price_data",
 		Short: "Query the FetchPriceData",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
@@ -99,7 +99,7 @@ func CmdDiscardData() *cobra.Command {
 		Use:   "discard_data",
 		Short: "Query the DiscardData",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err

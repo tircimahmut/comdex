@@ -1,19 +1,16 @@
 package keeper
 
 import (
-	"time"
-
+	errorsmod "cosmossdk.io/errors"
 	"github.com/bandprotocol/bandchain-packet/obi"
 	"github.com/bandprotocol/bandchain-packet/packet"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-
+	"time"
 	// channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	"github.com/comdex-official/comdex/x/bandoracle/types"
 	protobuftypes "github.com/cosmos/gogoproto/types"
 	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
-
-	"github.com/comdex-official/comdex/x/bandoracle/types"
 )
 
 func (k Keeper) SetFetchPriceResult(ctx sdk.Context, requestID types.OracleRequestID, result types.FetchPriceResult) {
@@ -25,7 +22,7 @@ func (k Keeper) SetFetchPriceResult(ctx sdk.Context, requestID types.OracleReque
 func (k Keeper) GetFetchPriceResult(ctx sdk.Context, id types.OracleRequestID) (types.FetchPriceResult, error) {
 	bz := ctx.KVStore(k.storeKey).Get(types.FetchPriceResultStoreKey(id))
 	if bz == nil {
-		return types.FetchPriceResult{}, sdkerrors.Wrapf(types.ErrRequestIDNotAvailable,
+		return types.FetchPriceResult{}, errorsmod.Wrapf(types.ErrRequestIDNotAvailable,
 			"GetResult: Result for request ID %d is not available.", id,
 		)
 	}

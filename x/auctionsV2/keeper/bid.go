@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	assettypes "github.com/comdex-official/comdex/x/asset/types"
 	"github.com/comdex-official/comdex/x/auctionsV2/types"
 	auctionsV2types "github.com/comdex-official/comdex/x/auctionsV2/types"
@@ -41,20 +42,20 @@ func (k Keeper) PlaceDutchAuctionBid(ctx sdk.Context, auctionID uint64, bidder s
 	if bid.Amount.GTE(auctionData.DebtToken.Amount) {
 		bid.Amount = auctionData.DebtToken.Amount
 		fullBid = true
-
 	}
-	_, collateralTokenQuanitity, _ := k.vault.GetAmountOfOtherToken(ctx, auctionData.DebtAssetId, debtPrice, bid.Amount, auctionData.CollateralAssetId, auctionData.CollateralTokenAuctionPrice)
-	//From auction bonus quantity , use the available quantity to calculate the collateral value
-	_, collateralTokenQuanitityForBonus, _ := k.vault.GetAmountOfOtherToken(ctx, auctionData.DebtAssetId, debtPrice, auctionData.BonusAmount, auctionData.CollateralAssetId, auctionData.CollateralTokenAuctionPrice)
-	//Checking if the auction bonus and the collateral to be given to user isnt more than available colalteral
-	totalCollateralTokenQuanitity := collateralTokenQuanitity.Add(collateralTokenQuanitityForBonus)
-	//If user has sent a bigger bid than the target amount ,
-	if fullBid || !totalCollateralTokenQuanitity.LTE(auctionData.CollateralToken.Amount) {
+
+	if fullBid {
+		_, collateralTokenQuantity, _ := k.vault.GetAmountOfOtherToken(ctx, auctionData.DebtAssetId, debtPrice, bid.Amount, auctionData.CollateralAssetId, auctionData.CollateralTokenAuctionPrice)
+		//From auction bonus quantity , use the available quantity to calculate the collateral value
+		_, collateralTokenQuanitityForBonus, _ := k.vault.GetAmountOfOtherToken(ctx, auctionData.DebtAssetId, debtPrice, auctionData.BonusAmount, auctionData.CollateralAssetId, auctionData.CollateralTokenAuctionPrice)
+		//Checking if the auction bonus and the collateral to be given to user isnt more than available colalteral
+		totalCollateralTokenQuanitity := collateralTokenQuantity.Add(collateralTokenQuanitityForBonus)
+		//If user has sent a bigger bid than the target amount ,
 
 		if !totalCollateralTokenQuanitity.LTE(auctionData.CollateralToken.Amount) {
 			//This means that there is less collateral available .
 			leftOverCollateral := auctionData.CollateralToken.Amount
-			_, debtTokenAgainstLeftOverCollateral, _ := k.vault.GetAmountOfOtherToken(ctx, auctionData.CollateralAssetId, auctionData.CollateralTokenAuctionPrice, leftOverCollateral.Sub(collateralTokenQuanitityForBonus), auctionData.DebtAssetId, debtPrice)
+			_, debtTokenAgainstLeftOverCollateral, _ := k.vault.GetAmountOfOtherToken(ctx, auctionData.CollateralAssetId, auctionData.CollateralTokenAuctionPrice, leftOverCollateral, auctionData.DebtAssetId, debtPrice)
 			bid.Amount = debtTokenAgainstLeftOverCollateral
 			totalCollateralTokenQuanitity = leftOverCollateral
 			//Amount to call from reserve account for adjusting the auction target debt
@@ -64,7 +65,7 @@ func (k Keeper) PlaceDutchAuctionBid(ctx sdk.Context, auctionID uint64, bidder s
 			//Updating the protocol was in loss struct
 			err := k.LiquidationsV2.WithdrawAppReserveFundsFn(ctx, auctionData.AppId, auctionData.DebtAssetId, debtGettingLeft)
 			if err != nil {
-				return bidId, err
+				return 0, types.ErrorInsufficientReserveBalance
 			}
 		}
 		//Take Debt Token from user ,
@@ -351,11 +352,11 @@ func (k Keeper) PlaceEnglishAuctionBid(ctx sdk.Context, auctionID uint64, bidder
 		if liquidationData.InitiatorType == "debt" {
 			bidAmount = tokenLastBid.Amount.Sub(change)
 			if bid.Amount.GT(bidAmount) {
-				return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "bid should be less than or equal to %d ", bidAmount.Uint64())
+				return errorsmod.Wrapf(sdkerrors.ErrNotFound, "bid should be less than or equal to %d ", bidAmount.Uint64())
 			}
 		} else {
 			if bid.Amount.LT(bidAmount) {
-				return sdkerrors.Wrapf(sdkerrors.ErrNotFound, "bid should be greater than or equal to %d ", bidAmount.Uint64())
+				return errorsmod.Wrapf(sdkerrors.ErrNotFound, "bid should be greater than or equal to %d ", bidAmount.Uint64())
 			}
 		}
 	} else {

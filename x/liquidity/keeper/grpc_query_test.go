@@ -1,15 +1,14 @@
 package keeper_test
 
 import (
-	"time"
-
+	errorsmod "cosmossdk.io/errors"
 	utils "github.com/comdex-official/comdex/types"
 	"github.com/comdex-official/comdex/x/liquidity/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	_ "github.com/stretchr/testify/suite"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
 func (s *KeeperTestSuite) TestParams() {
@@ -39,7 +38,7 @@ func (s *KeeperTestSuite) TestGenericParams() {
 		{
 			Name:   "error app id invalid",
 			Req:    &types.QueryGenericParamsRequest{AppId: 6969},
-			ExpErr: sdkerrors.Wrapf(types.ErrInvalidAppID, "app id 6969 not found"),
+			ExpErr: errorsmod.Wrapf(types.ErrInvalidAppID, "app id 6969 not found"),
 		},
 		{
 			Name:   "success",
@@ -1167,7 +1166,7 @@ func (s *KeeperTestSuite) TestFarmedPoolCoin() {
 		{
 			Name:   "error pool id invalid",
 			Req:    &types.QueryFarmedPoolCoinRequest{AppId: appID1, PoolId: 123},
-			ExpErr: sdkerrors.Wrapf(types.ErrInvalidPoolID, "pool id 123 is invalid"),
+			ExpErr: errorsmod.Wrapf(types.ErrInvalidPoolID, "pool id 123 is invalid"),
 		},
 		{
 			Name:   "success only by orderer",

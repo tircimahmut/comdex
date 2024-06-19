@@ -180,9 +180,6 @@ func GenAndDeliverTxWithFees(txCtx simulation.OperationInput, gas uint64, fees s
 		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "message doesn't leave room for fees"), nil, err
 	}
 
-	if err != nil {
-		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "unable to generate fees"), nil, err
-	}
 	return GenAndDeliverTx(txCtx, fees, gas)
 }
 

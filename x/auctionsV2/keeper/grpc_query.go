@@ -148,6 +148,25 @@ func (q QueryServer) Bids(c context.Context, req *types.QueryBidsRequest) (*type
 	}, nil
 }
 
+func (q QueryServer) Bid(c context.Context, req *types.QueryBidRequest) (*types.QueryBidResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be empty")
+	}
+
+	var (
+		ctx  = sdk.UnwrapSDKContext(c)
+		item types.Bid
+	)
+	item, err := q.GetUserBid(ctx, req.BidId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryBidResponse{
+		Bid: item,
+	}, nil
+}
+
 func (q QueryServer) AuctionParams(c context.Context, req *types.QueryAuctionParamsRequest) (*types.QueryAuctionParamsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be empty")

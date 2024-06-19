@@ -1,13 +1,12 @@
 package collector
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"fmt"
 	"github.com/comdex-official/comdex/x/collector/keeper"
-
+	"github.com/comdex-official/comdex/x/collector/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
-	"github.com/comdex-official/comdex/x/collector/types"
 )
 
 // NewHandler ...
@@ -21,9 +20,15 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case *types.MsgDeposit:
 			res, err := server.Deposit(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgRefund:
+			res, err := server.Refund(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgUpdateDebtParams:
+			res, err := server.UpdateDebtParams(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
-			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
+			return nil, errorsmod.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
 		}
 	}
 }

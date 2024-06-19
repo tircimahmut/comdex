@@ -1,14 +1,6 @@
 package keeper_test
 
 import (
-	"testing"
-	"time"
-
-	"github.com/stretchr/testify/suite"
-
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	chain "github.com/comdex-official/comdex/app"
 	assetKeeper "github.com/comdex-official/comdex/x/asset/keeper"
 	liquidationKeeper "github.com/comdex-official/comdex/x/liquidation/keeper"
@@ -17,6 +9,11 @@ import (
 	rewardsKeeper "github.com/comdex-official/comdex/x/rewards/keeper"
 	vaultKeeper "github.com/comdex-official/comdex/x/vault/keeper"
 	vaultTypes "github.com/comdex-official/comdex/x/vault/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/suite"
+	"testing"
+	"time"
 )
 
 type KeeperTestSuite struct {
@@ -50,34 +47,6 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.marketKeeper = s.app.MarketKeeper
 	s.rewardsKeeper = s.app.Rewardskeeper
 }
-
-//
-//// Below are just shortcuts to frequently-used functions.
-//func (s *KeeperTestSuite) getBalances(addr sdk.AccAddress) sdk.Coins {
-//	return s.app.bankKeeper.GetAllBalances(s.ctx, addr)
-//}
-//
-//func (s *KeeperTestSuite) getBalance(addr sdk.AccAddress, denom string) sdk.Coin {
-//	return s.app.bankKeeper.GetBalance(s.ctx, addr, denom)
-//}
-//
-//func (s *KeeperTestSuite) sendCoins(fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) {
-//	s.T().Helper()
-//	err := s.app.bankKeeper.SendCoins(s.ctx, fromAddr, toAddr, amt)
-//	s.Require().NoError(err)
-//}
-//
-//func (s *KeeperTestSuite) nextBlock() {
-//	liquidity.EndBlocker(s.ctx, s.keeper)
-//	liquidity.BeginBlocker(s.ctx, s.keeper)
-//}
-//
-//// Below are useful helpers to write test code easily.
-//func (s *KeeperTestSuite) addr(addrNum int) sdk.AccAddress {
-//	addr := make(sdk.AccAddress, 20)
-//	binary.PutVarint(addr, int64(addrNum))
-//	return addr
-//}
 
 func (s *KeeperTestSuite) fundAddr(addr sdk.AccAddress, amt sdk.Coin) {
 	amt1 := sdk.NewCoins(amt)

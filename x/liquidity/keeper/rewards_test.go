@@ -1,8 +1,7 @@
 package keeper_test
 
 import (
-	"time"
-
+	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	utils "github.com/comdex-official/comdex/types"
 	"github.com/comdex-official/comdex/x/liquidity/types"
@@ -10,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	_ "github.com/stretchr/testify/suite"
+	"time"
 )
 
 func (s *KeeperTestSuite) TestFarm() {
@@ -60,25 +60,25 @@ func (s *KeeperTestSuite) TestFarm() {
 		{
 			Name:             "error app id invalid",
 			Msg:              *types.NewMsgFarm(69, pool.Id, liquidityProvider1, utils.ParseCoin("699000000pool1-1")),
-			ExpErr:           sdkerrors.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
+			ExpErr:           errorsmod.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
 			AvailableBalance: utils.ParseCoins("10000000000pool1-1,10000000000pool2-1"),
 		},
 		{
 			Name:             "error pool id invalid",
 			Msg:              *types.NewMsgFarm(appID1, 69, liquidityProvider1, utils.ParseCoin("699000000pool1-1")),
-			ExpErr:           sdkerrors.Wrapf(types.ErrInvalidPoolID, "no pool exists with id : %d", 69),
+			ExpErr:           errorsmod.Wrapf(types.ErrInvalidPoolID, "no pool exists with id : %d", 69),
 			AvailableBalance: utils.ParseCoins("10000000000pool1-1,10000000000pool2-1"),
 		},
 		{
 			Name:             "error pool denom invalid",
 			Msg:              *types.NewMsgFarm(appID1, pool.Id, liquidityProvider1, utils.ParseCoin("699000000pool1-2")),
-			ExpErr:           sdkerrors.Wrapf(types.ErrWrongPoolCoinDenom, "expected pool coin denom %s, found pool1-2", pool.PoolCoinDenom),
+			ExpErr:           errorsmod.Wrapf(types.ErrWrongPoolCoinDenom, "expected pool coin denom %s, found pool1-2", pool.PoolCoinDenom),
 			AvailableBalance: utils.ParseCoins("10000000000pool1-1,10000000000pool2-1"),
 		},
 		{
 			Name:             "error insufficient pool denoms",
 			Msg:              *types.NewMsgFarm(appID1, pool.Id, liquidityProvider1, utils.ParseCoin("100000000000pool1-1")),
-			ExpErr:           sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance 10000000000pool1-1 is smaller than 100000000000pool1-1"),
+			ExpErr:           errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance 10000000000pool1-1 is smaller than 100000000000pool1-1"),
 			AvailableBalance: utils.ParseCoins("10000000000pool1-1,10000000000pool2-1"),
 		},
 		{
@@ -213,31 +213,31 @@ func (s *KeeperTestSuite) TestUnfarm() {
 		{
 			Name:             "error app id invalid",
 			Msg:              *types.NewMsgUnfarm(69, pool.Id, liquidityProvider1, utils.ParseCoin("699000000pool1-1")),
-			ExpErr:           sdkerrors.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
+			ExpErr:           errorsmod.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
 			AvailableBalance: sdk.Coins{},
 		},
 		{
 			Name:             "error pool id invalid",
 			Msg:              *types.NewMsgUnfarm(appID1, 69, liquidityProvider1, utils.ParseCoin("699000000pool1-1")),
-			ExpErr:           sdkerrors.Wrapf(types.ErrInvalidPoolID, "no pool exists with id : %d", 69),
+			ExpErr:           errorsmod.Wrapf(types.ErrInvalidPoolID, "no pool exists with id : %d", 69),
 			AvailableBalance: sdk.Coins{},
 		},
 		{
 			Name:             "error pool denom invalid",
 			Msg:              *types.NewMsgUnfarm(appID1, pool.Id, liquidityProvider1, utils.ParseCoin("699000000pool1-2")),
-			ExpErr:           sdkerrors.Wrapf(types.ErrWrongPoolCoinDenom, "expected pool coin denom %s, found pool1-2", pool.PoolCoinDenom),
+			ExpErr:           errorsmod.Wrapf(types.ErrWrongPoolCoinDenom, "expected pool coin denom %s, found pool1-2", pool.PoolCoinDenom),
 			AvailableBalance: sdk.Coins{},
 		},
 		{
 			Name:             "error farm not found",
 			Msg:              *types.NewMsgUnfarm(appID1, pool2.Id, liquidityProvider1, utils.ParseCoin("699000000pool1-2")),
-			ExpErr:           sdkerrors.Wrapf(types.ErrorFarmerNotFound, "no active farm found for given pool id %d", pool2.Id),
+			ExpErr:           errorsmod.Wrapf(types.ErrorFarmerNotFound, "no active farm found for given pool id %d", pool2.Id),
 			AvailableBalance: sdk.Coins{},
 		},
 		{
 			Name:             "error insufficient farmed amounts",
 			Msg:              *types.NewMsgUnfarm(appID1, pool.Id, liquidityProvider1, utils.ParseCoin("100000000000pool1-1")),
-			ExpErr:           sdkerrors.Wrapf(types.ErrInvalidUnfarmAmount, "farmed pool coin amount 10000000000pool1-1 smaller than requested unfarming pool coin amount 100000000000pool1-1"),
+			ExpErr:           errorsmod.Wrapf(types.ErrInvalidUnfarmAmount, "farmed pool coin amount 10000000000pool1-1 smaller than requested unfarming pool coin amount 100000000000pool1-1"),
 			AvailableBalance: sdk.Coins{},
 		},
 		{
@@ -335,7 +335,7 @@ func (s *KeeperTestSuite) TestUnfarmTwo() {
 	msgUnlock := types.NewMsgUnfarm(appID1, pool.Id, liquidityProvider1, utils.ParseCoin("160000000pool1-1"))
 	err = s.keeper.Unfarm(s.ctx, msgUnlock)
 	s.Require().Error(err)
-	s.Require().EqualError(err, sdkerrors.Wrapf(types.ErrInvalidUnfarmAmount, "farmed pool coin amount 150000000pool1-1 smaller than requested unfarming pool coin amount 160000000pool1-1").Error())
+	s.Require().EqualError(err, errorsmod.Wrapf(types.ErrInvalidUnfarmAmount, "farmed pool coin amount 150000000pool1-1 smaller than requested unfarming pool coin amount 160000000pool1-1").Error())
 
 	// unfarming small portions, below unlock removes token from most recently added queue
 	// unlock is done from a single latest object in a queue since this object itself can satisfy the unlock requirement,
@@ -404,7 +404,7 @@ func (s *KeeperTestSuite) TestUnfarmTwo() {
 	msgUnlock = types.NewMsgUnfarm(appID1, pool.Id, liquidityProvider1, utils.ParseCoin("11000000pool1-1"))
 	err = s.keeper.Unfarm(s.ctx, msgUnlock)
 	s.Require().Error(err)
-	s.Require().EqualError(err, sdkerrors.Wrapf(types.ErrInvalidUnfarmAmount, "farmed pool coin amount 10000000pool1-1 smaller than requested unfarming pool coin amount 11000000pool1-1").Error())
+	s.Require().EqualError(err, errorsmod.Wrapf(types.ErrInvalidUnfarmAmount, "farmed pool coin amount 10000000pool1-1 smaller than requested unfarming pool coin amount 11000000pool1-1").Error())
 
 	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(time.Hour * 1))
 	// SortedByTimeFarmQueue -> [69000000pool1-1, 10000000pool1-1]
@@ -1054,14 +1054,14 @@ func (s *KeeperTestSuite) TestGetFarmingRewardsDataErrorHandellings() {
 
 	rewardDistrData, err := s.keeper.GetFarmingRewardsData(s.ctx, appID1, sdk.NewCoin("ucmdx", newInt(10000000000)), liquidityGauge)
 	s.Require().Error(err)
-	s.Require().EqualError(err, sdkerrors.Wrapf(types.ErrDepletedPool, "pool 1 is depleted").Error())
+	s.Require().EqualError(err, errorsmod.Wrapf(types.ErrDepletedPool, "pool 1 is depleted").Error())
 	s.Require().IsType([]rewardtypes.RewardDistributionDataCollector{}, rewardDistrData)
 
 	s.Deposit(appID1, pool.Id, liquidityProvider1, "1000000000uasset1,1000000000uasset2")
 	s.nextBlock()
 	rewardDistrData, err = s.keeper.GetFarmingRewardsData(s.ctx, appID1, sdk.NewCoin("ucmdx", newInt(10000000000)), liquidityGauge)
 	s.Require().Error(err)
-	s.Require().EqualError(err, sdkerrors.Wrapf(types.ErrDisabledPool, "pool 1 is disabled").Error())
+	s.Require().EqualError(err, errorsmod.Wrapf(types.ErrDisabledPool, "pool 1 is disabled").Error())
 	s.Require().IsType([]rewardtypes.RewardDistributionDataCollector{}, rewardDistrData)
 }
 

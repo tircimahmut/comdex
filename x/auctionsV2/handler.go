@@ -1,6 +1,7 @@
 package auctionsV2
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"github.com/comdex-official/comdex/x/auctionsV2/keeper"
 	"github.com/comdex-official/comdex/x/auctionsV2/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,7 +33,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			return sdk.WrapServiceResult(ctx, res, err)
 
 		default:
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "%T", msg)
+			return nil, errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "%T", msg)
 		}
 	}
 }
@@ -43,7 +44,7 @@ func NewAuctionsV2Handler(k keeper.Keeper) govtypes.Handler {
 		case *types.DutchAutoBidParamsProposal:
 			return handleAddAuctionParamsProposal(ctx, k, c)
 		default:
-			return sdkerrors.Wrapf(types.ErrorUnknownProposalType, "%T", c)
+			return errorsmod.Wrapf(types.ErrorUnknownProposalType, "%T", c)
 		}
 	}
 }

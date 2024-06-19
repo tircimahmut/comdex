@@ -209,7 +209,7 @@ func (qp QueryPlugin) WasmGetPools(ctx sdk.Context, appID uint64) (pools []uint6
 
 func (qp QueryPlugin) WasmGetAssetPrice(ctx sdk.Context, assetID uint64) (twa uint64, found bool) {
 	assetTwa, found := qp.marketKeeper.GetTwa(ctx, assetID)
-	if found && assetTwa.IsPriceActive{
+	if found && assetTwa.IsPriceActive {
 		return assetTwa.Twa, true
 	}
 	return 0, false

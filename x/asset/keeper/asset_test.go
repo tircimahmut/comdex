@@ -36,16 +36,16 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 					{
-						2,
-						sdk.ZeroInt(),
-						true,
-						userAddress1,
+						AssetId:       2,
+						GenesisSupply: sdk.ZeroInt(),
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -61,10 +61,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -80,10 +80,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -99,10 +99,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -118,10 +118,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -137,10 +137,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -156,10 +156,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -175,10 +175,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -194,10 +194,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -213,10 +213,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 0,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						false,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    false,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -232,10 +232,10 @@ func (s *KeeperTestSuite) TestAddApp() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						3,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       3,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -273,10 +273,6 @@ func (s *KeeperTestSuite) TestAddApp() {
 				s.Require().Equal(res.App.MinGovDeposit, tc.msg.MinGovDeposit)
 				err = assetKeeper.UpdateGovTimeInApp(*ctx, assetTypes.AppAndGovTime{AppId: tc.appID, GovTimeInSeconds: 653, MinGovDeposit: sdk.NewIntFromUint64(5000000)})
 				s.Require().NoError(err)
-				//minGovDeposit, govTimeInSeconds, _, err := assetKeeper.GetAppWasmQuery(*ctx, tc.appID)
-				//s.Require().NoError(err)
-				//s.Require().Equal(minGovDeposit, sdk.NewIntFromUint64(10000000))
-				//s.Require().Equal(govTimeInSeconds, int64(653))
 			}
 		})
 	}
@@ -1260,10 +1256,10 @@ func (s *KeeperTestSuite) TestAddAssetInAppRecords() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						4,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       4,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -1281,10 +1277,10 @@ func (s *KeeperTestSuite) TestAddAssetInAppRecords() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						8,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       8,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -1302,10 +1298,10 @@ func (s *KeeperTestSuite) TestAddAssetInAppRecords() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						5,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       5,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -1337,10 +1333,10 @@ func (s *KeeperTestSuite) TestAddAssetInAppRecords() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						2,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       2,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -1358,10 +1354,10 @@ func (s *KeeperTestSuite) TestAddAssetInAppRecords() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						4,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       4,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -1379,10 +1375,10 @@ func (s *KeeperTestSuite) TestAddAssetInAppRecords() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						4,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       4,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},
@@ -1400,10 +1396,10 @@ func (s *KeeperTestSuite) TestAddAssetInAppRecords() {
 				GovTimeInSeconds: 900,
 				GenesisToken: []assetTypes.MintGenesisToken{
 					{
-						4,
-						genesisSupply,
-						true,
-						userAddress1,
+						AssetId:       4,
+						GenesisSupply: genesisSupply,
+						IsGovToken:    true,
+						Recipient:     userAddress1,
 					},
 				},
 			},

@@ -2,30 +2,56 @@ package wasm
 
 import (
 	"fmt"
-	"testing"
-	"time"
-
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/comdex-official/comdex/app"
 	"github.com/comdex-official/comdex/app/wasm/bindings"
 	assetTypes "github.com/comdex-official/comdex/x/asset/types"
+	"github.com/comdex-official/comdex/x/tokenmint/keeper"
 	tokenmintTypes "github.com/comdex-official/comdex/x/tokenmint/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-
-	"github.com/stretchr/testify/require"
-
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	// simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/comdex-official/comdex/app"
-	"github.com/comdex-official/comdex/x/tokenmint/keeper"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktestutil "github.com/cosmos/cosmos-sdk/x/bank/testutil"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	"github.com/stretchr/testify/require"
+	"os"
+	"testing"
+	"time"
 )
 
-func SetupCustomApp(t *testing.T) (*app.App, *sdk.Context) {
-	comdex, ctx := CreateTestInput(t)
-	return comdex, ctx
+func SetupCustomApp(t *testing.T, addr sdk.AccAddress) (*app.App, *sdk.Context) {
+	comdexApp, ctx := CreateTestInput(t)
+	wasmKeeper := comdexApp.WasmKeeper
+
+	storeReflectCode(t, *ctx, comdexApp, addr)
+
+	cInfo := wasmKeeper.GetCodeInfo(*ctx, 1)
+	require.NotNil(t, cInfo)
+
+	return comdexApp, ctx
+}
+
+func storeReflectCode(t *testing.T, ctx sdk.Context, comdexApp *app.App, addr sdk.AccAddress) uint64 {
+	wasmCode, err := os.ReadFile("../testdata/counter.wasm")
+	require.NoError(t, err)
+
+	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(comdexApp.WasmKeeper)
+	codeID, _, err := contractKeeper.Create(ctx, addr, wasmCode, nil)
+	require.NoError(t, err)
+
+	return codeID
+}
+
+func instantiateReflectContract(t *testing.T, ctx sdk.Context, comdexApp *app.App, funder sdk.AccAddress) sdk.AccAddress {
+	initMsgBz := []byte("{}")
+	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(comdexApp.WasmKeeper)
+	codeID := uint64(1)
+	addr, _, err := contractKeeper.Instantiate(ctx, codeID, funder, funder, initMsgBz, "demo contract", nil)
+	require.NoError(t, err)
+
+	return addr
 }
 
 func CreateTestInput(t *testing.T) (*app.App, *sdk.Context) {
@@ -34,10 +60,13 @@ func CreateTestInput(t *testing.T) (*app.App, *sdk.Context) {
 	return comdex, &ctx
 }
 
-func FundAccount(t *testing.T, ctx sdk.Context, comdex *app.App, acct sdk.AccAddress) {
-	err := FundAccountFunc(comdex.BankKeeper, ctx, acct, sdk.NewCoins(
-		sdk.NewCoin("ucmdx", sdk.NewInt(10000000000)),
-	))
+func fundAccount(t *testing.T, ctx sdk.Context, comdexapp *app.App, addr sdk.AccAddress, coins sdk.Coins) {
+	err := banktestutil.FundAccount(
+		comdexapp.BankKeeper,
+		ctx,
+		addr,
+		coins,
+	)
 	require.NoError(t, err)
 }
 
@@ -69,10 +98,10 @@ func AddAppAsset(app *app.App, ctx1 sdk.Context) {
 		GovTimeInSeconds: 900,
 		GenesisToken: []assetTypes.MintGenesisToken{
 			{
-				3,
-				genesisSupply,
-				true,
-				userAddress,
+				AssetId:       3,
+				GenesisSupply: genesisSupply,
+				IsGovToken:    true,
+				Recipient:     userAddress,
 			},
 		},
 	}

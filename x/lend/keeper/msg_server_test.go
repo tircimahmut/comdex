@@ -2,14 +2,14 @@ package keeper_test
 
 import (
 	"fmt"
-	utils "github.com/comdex-official/comdex/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/pkg/errors"
 	"time"
 
+	errorsmod "cosmossdk.io/errors"
+	utils "github.com/comdex-official/comdex/types"
 	"github.com/comdex-official/comdex/x/lend/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/pkg/errors"
 )
 
 func (s *KeeperTestSuite) TestMsgLend() {
@@ -159,7 +159,7 @@ func (s *KeeperTestSuite) TestMsgLend() {
 		{
 			Name:               "invalid offer coin amount",
 			Msg:                *types.NewMsgLend("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", assetOneID, sdk.NewCoin("uasset2", sdk.NewInt(100)), poolOneID, appOneID),
-			ExpErr:             sdkerrors.Wrapf(types.ErrBadOfferCoinAmount, "uasset2"),
+			ExpErr:             errorsmod.Wrapf(types.ErrBadOfferCoinAmount, "uasset2"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -168,7 +168,7 @@ func (s *KeeperTestSuite) TestMsgLend() {
 		{
 			Name:               "Asset Id not defined in the pool",
 			Msg:                *types.NewMsgLend("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", assetFourID, sdk.NewCoin("uasset4", sdk.NewInt(100)), poolOneID, appOneID),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidAssetIDForPool, "4"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidAssetIDForPool, "4"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -177,7 +177,7 @@ func (s *KeeperTestSuite) TestMsgLend() {
 		{
 			Name:               "Asset Rates Stats not found",
 			Msg:                *types.NewMsgLend("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", assetFourID, sdk.NewCoin("uasset4", sdk.NewInt(100)), poolTwoID, appOneID),
-			ExpErr:             sdkerrors.Wrapf(types.ErrorAssetRatesParamsNotFound, "4"),
+			ExpErr:             errorsmod.Wrapf(types.ErrorAssetRatesParamsNotFound, "4"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -359,7 +359,7 @@ func (s *KeeperTestSuite) TestMsgWithdraw() {
 		{
 			Name:               "invalid offer coin amount",
 			Msg:                *types.NewMsgWithdraw("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", 1, sdk.NewCoin("uasset2", sdk.NewInt(10))),
-			ExpErr:             sdkerrors.Wrap(types.ErrBadOfferCoinAmount, "uasset2"),
+			ExpErr:             errorsmod.Wrap(types.ErrBadOfferCoinAmount, "uasset2"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -512,7 +512,7 @@ func (s *KeeperTestSuite) TestMsgDeposit() {
 		{
 			Name:               "invalid offer coin amount",
 			Msg:                *types.NewMsgDeposit("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", 1, sdk.NewCoin("uasset2", sdk.NewInt(100))),
-			ExpErr:             sdkerrors.Wrap(types.ErrBadOfferCoinAmount, "uasset2"),
+			ExpErr:             errorsmod.Wrap(types.ErrBadOfferCoinAmount, "uasset2"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -851,7 +851,7 @@ func (s *KeeperTestSuite) TestMsgBorrow() {
 		{
 			Name:               "Stable Borrow Rate Not Enabled for This Asset",
 			Msg:                *types.NewMsgBorrow("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", 1, 4, true, sdk.NewCoin("ucasset1", newInt(100)), sdk.NewCoin("uasset3", newInt(10))),
-			ExpErr:             sdkerrors.Wrap(types.ErrStableBorrowDisabled, "10uasset3"),
+			ExpErr:             errorsmod.Wrap(types.ErrStableBorrowDisabled, "10uasset3"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -1288,7 +1288,7 @@ func (s *KeeperTestSuite) TestMsgDepositBorrow() {
 		{
 			Name:               "invalid offer coin amount",
 			Msg:                *types.NewMsgDepositBorrow("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", 1, sdk.NewCoin("uasset3", newInt(100))),
-			ExpErr:             sdkerrors.Wrap(types.ErrBadOfferCoinAmount, "uasset3"),
+			ExpErr:             errorsmod.Wrap(types.ErrBadOfferCoinAmount, "uasset3"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -1859,7 +1859,7 @@ func (s *KeeperTestSuite) TestMsgBorrowAlternate() {
 		{
 			Name:               "invalid offer coin amount",
 			Msg:                *types.NewMsgBorrowAlternate("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", assetOneID, poolOneID, sdk.NewCoin("uasset2", sdk.NewInt(100)), pairThreeID, false, sdk.NewCoin("uasset2", sdk.NewInt(10)), appOneID),
-			ExpErr:             sdkerrors.Wrapf(types.ErrBadOfferCoinAmount, "uasset2"),
+			ExpErr:             errorsmod.Wrapf(types.ErrBadOfferCoinAmount, "uasset2"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -1877,7 +1877,7 @@ func (s *KeeperTestSuite) TestMsgBorrowAlternate() {
 		{
 			Name:               "Asset Id not defined in the pool",
 			Msg:                *types.NewMsgBorrowAlternate("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", assetFourID, poolOneID, sdk.NewCoin("uasset4", sdk.NewInt(100)), pairSevenID, false, sdk.NewCoin("uasset3", sdk.NewInt(10)), appOneID),
-			ExpErr:             sdkerrors.Wrap(types.ErrInvalidAssetIDForPool, "4"),
+			ExpErr:             errorsmod.Wrap(types.ErrInvalidAssetIDForPool, "4"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -1886,7 +1886,7 @@ func (s *KeeperTestSuite) TestMsgBorrowAlternate() {
 		{
 			Name:               "Asset Rates Stats not found",
 			Msg:                *types.NewMsgBorrowAlternate("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t", assetFourID, poolTwoID, sdk.NewCoin("uasset4", sdk.NewInt(100)), pairSevenID, false, sdk.NewCoin("uasset3", sdk.NewInt(10)), appOneID),
-			ExpErr:             sdkerrors.Wrap(types.ErrorAssetRatesParamsNotFound, "4"),
+			ExpErr:             errorsmod.Wrap(types.ErrorAssetRatesParamsNotFound, "4"),
 			ExpResp:            nil,
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,

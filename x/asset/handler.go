@@ -2,14 +2,13 @@ package asset
 
 //goland:noinspection GoLinter
 import (
+	errorsmod "cosmossdk.io/errors"
 	"fmt"
-
+	"github.com/comdex-official/comdex/x/asset/keeper"
+	"github.com/comdex-official/comdex/x/asset/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-
-	"github.com/comdex-official/comdex/x/asset/keeper"
-	"github.com/comdex-official/comdex/x/asset/types"
 )
 
 // NewHandler ...
@@ -25,7 +24,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
-			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
+			return nil, errorsmod.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
 		}
 	}
 }
@@ -55,7 +54,7 @@ func NewUpdateAssetProposalHandler(k keeper.Keeper) govtypes.Handler {
 			return handleMultipleAssetsPairsProposal(ctx, k, c)
 
 		default:
-			return sdkerrors.Wrapf(types.ErrorUnknownProposalType, "%T", c)
+			return errorsmod.Wrapf(types.ErrorUnknownProposalType, "%T", c)
 		}
 	}
 }

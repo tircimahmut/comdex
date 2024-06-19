@@ -1,12 +1,12 @@
 package keeper_test
 
 import (
+	errorsmod "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
 	utils "github.com/comdex-official/comdex/types"
 	"github.com/comdex-official/comdex/x/liquidity"
 	"github.com/comdex-official/comdex/x/liquidity/amm"
 	"github.com/comdex-official/comdex/x/liquidity/types"
-
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	_ "github.com/stretchr/testify/suite"
@@ -45,7 +45,7 @@ func (s *KeeperTestSuite) TestCreatePool() {
 			Msg: *types.NewMsgCreatePool(
 				69, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin(app1pair.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -56,7 +56,7 @@ func (s *KeeperTestSuite) TestCreatePool() {
 			Msg: *types.NewMsgCreatePool(
 				appID1, addr1, 12, sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin(app1pair.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(sdkerrors.ErrNotFound, "pair %d not found", 12),
+			ExpErr:             errorsmod.Wrapf(sdkerrors.ErrNotFound, "pair %d not found", 12),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -67,7 +67,7 @@ func (s *KeeperTestSuite) TestCreatePool() {
 			Msg: *types.NewMsgCreatePool(
 				appID1, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin("fakedenom1", sdkmath.NewInt(1000000000000)), sdk.NewCoin("fakedenom2", sdkmath.NewInt(1000000000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom1"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom1"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -78,7 +78,7 @@ func (s *KeeperTestSuite) TestCreatePool() {
 			Msg: *types.NewMsgCreatePool(
 				appID1, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin("fakedenom2", sdkmath.NewInt(1000000000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom2"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom2"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -89,7 +89,7 @@ func (s *KeeperTestSuite) TestCreatePool() {
 			Msg: *types.NewMsgCreatePool(
 				appID1, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin("fakedenom1", sdkmath.NewInt(1000000000000)), sdk.NewCoin(app1pair.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom1"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom1"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -100,7 +100,7 @@ func (s *KeeperTestSuite) TestCreatePool() {
 			Msg: *types.NewMsgCreatePool(
 				appID1, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, params.MinInitialDepositAmount.Sub(sdkmath.NewInt(1))), sdk.NewCoin(app1pair.QuoteCoinDenom, params.MinInitialDepositAmount.Sub(sdkmath.NewInt(1)))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInsufficientDepositAmount, "%s is smaller than %s", sdk.NewCoin(app1pair.BaseCoinDenom, params.MinInitialDepositAmount.Sub(sdkmath.NewInt(1))), sdk.NewCoin(app1pair.BaseCoinDenom, params.MinInitialDepositAmount)),
+			ExpErr:             errorsmod.Wrapf(types.ErrInsufficientDepositAmount, "%s is smaller than %s", sdk.NewCoin(app1pair.BaseCoinDenom, params.MinInitialDepositAmount.Sub(sdkmath.NewInt(1))), sdk.NewCoin(app1pair.BaseCoinDenom, params.MinInitialDepositAmount)),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -111,7 +111,7 @@ func (s *KeeperTestSuite) TestCreatePool() {
 			Msg: *types.NewMsgCreatePool(
 				appID1, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, params.MinInitialDepositAmount), sdk.NewCoin(app1pair.QuoteCoinDenom, params.MinInitialDepositAmount.Sub(sdkmath.NewInt(1)))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInsufficientDepositAmount, "%s is smaller than %s", sdk.NewCoin(app1pair.QuoteCoinDenom, params.MinInitialDepositAmount.Sub(sdkmath.NewInt(1))), sdk.NewCoin(app1pair.QuoteCoinDenom, params.MinInitialDepositAmount)),
+			ExpErr:             errorsmod.Wrapf(types.ErrInsufficientDepositAmount, "%s is smaller than %s", sdk.NewCoin(app1pair.QuoteCoinDenom, params.MinInitialDepositAmount.Sub(sdkmath.NewInt(1))), sdk.NewCoin(app1pair.QuoteCoinDenom, params.MinInitialDepositAmount)),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -124,7 +124,7 @@ func (s *KeeperTestSuite) TestCreatePool() {
 			Msg: *types.NewMsgCreatePool(
 				appID1, addr1, dummyPair1.Id, sdk.NewCoins(sdk.NewCoin(dummyPair1.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin(dummyPair1.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than 1000000000000%s", dummyPair1.QuoteCoinDenom),
+			ExpErr:             errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than 1000000000000%s", dummyPair1.QuoteCoinDenom),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -137,7 +137,7 @@ func (s *KeeperTestSuite) TestCreatePool() {
 			Msg: *types.NewMsgCreatePool(
 				appID1, addr1, dummyPair2.Id, sdk.NewCoins(sdk.NewCoin(dummyPair2.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin(dummyPair2.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 			),
-			ExpErr:             sdkerrors.Wrap(sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than %s", params.PoolCreationFee[0].String()), "insufficient pool creation fee"),
+			ExpErr:             errorsmod.Wrap(errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than %s", params.PoolCreationFee[0].String()), "insufficient pool creation fee"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -397,7 +397,7 @@ func (s *KeeperTestSuite) TestDeposit() {
 			Msg: *types.NewMsgDeposit(
 				69, addr1, app1Pool.Id, sdk.NewCoins(sdk.NewCoin(app1Pair.BaseCoinDenom, sdkmath.NewInt(100000000)), sdk.NewCoin(app1Pair.QuoteCoinDenom, sdkmath.NewInt(100000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
 			ExpResp:            &types.DepositRequest{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -408,7 +408,7 @@ func (s *KeeperTestSuite) TestDeposit() {
 			Msg: *types.NewMsgDeposit(
 				appID1, addr1, 69, sdk.NewCoins(sdk.NewCoin(app1Pair.BaseCoinDenom, sdkmath.NewInt(100000000)), sdk.NewCoin(app1Pair.QuoteCoinDenom, sdkmath.NewInt(100000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(sdkerrors.ErrNotFound, "pool %d not found", 69),
+			ExpErr:             errorsmod.Wrapf(sdkerrors.ErrNotFound, "pool %d not found", 69),
 			ExpResp:            &types.DepositRequest{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -419,7 +419,7 @@ func (s *KeeperTestSuite) TestDeposit() {
 			Msg: *types.NewMsgDeposit(
 				appID1, addr1, app1Pool.Id, sdk.NewCoins(sdk.NewCoin("fakedenom1", sdkmath.NewInt(100000000)), sdk.NewCoin("fakedenom2", sdkmath.NewInt(100000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidCoinDenom, "coin denom fakedenom1 is not in the pair"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidCoinDenom, "coin denom fakedenom1 is not in the pair"),
 			ExpResp:            &types.DepositRequest{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -430,7 +430,7 @@ func (s *KeeperTestSuite) TestDeposit() {
 			Msg: *types.NewMsgDeposit(
 				appID1, addr1, app1Pool.Id, sdk.NewCoins(sdk.NewCoin(app1Pair.BaseCoinDenom, sdkmath.NewInt(100000000)), sdk.NewCoin("fakedenom2", sdkmath.NewInt(100000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidCoinDenom, "coin denom fakedenom2 is not in the pair"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidCoinDenom, "coin denom fakedenom2 is not in the pair"),
 			ExpResp:            &types.DepositRequest{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -441,7 +441,7 @@ func (s *KeeperTestSuite) TestDeposit() {
 			Msg: *types.NewMsgDeposit(
 				appID1, addr1, app1Pool.Id, sdk.NewCoins(sdk.NewCoin("fakedenom1", sdkmath.NewInt(100000000)), sdk.NewCoin(app1Pair.QuoteCoinDenom, sdkmath.NewInt(100000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidCoinDenom, "coin denom fakedenom1 is not in the pair"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidCoinDenom, "coin denom fakedenom1 is not in the pair"),
 			ExpResp:            &types.DepositRequest{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -452,7 +452,7 @@ func (s *KeeperTestSuite) TestDeposit() {
 			Msg: *types.NewMsgDeposit(
 				appID1, addr1, app1Pool.Id, sdk.NewCoins(sdk.NewCoin(app1Pair.BaseCoinDenom, sdkmath.NewInt(100000000)), sdk.NewCoin(app1Pair.QuoteCoinDenom, sdkmath.NewInt(100000000))),
 			),
-			ExpErr:             sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than 100000000%s", app1Pair.BaseCoinDenom),
+			ExpErr:             errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than 100000000%s", app1Pair.BaseCoinDenom),
 			ExpResp:            &types.DepositRequest{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -718,7 +718,7 @@ func (s *KeeperTestSuite) TestWithdraw() {
 			Msg: *types.NewMsgWithdraw(
 				69, addr1, pool.Id, availablePoolBalance,
 			),
-			ExpErr:           sdkerrors.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
+			ExpErr:           errorsmod.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
 			ExpResp:          &types.WithdrawRequest{},
 			AvailableBalance: sdk.NewCoins(),
 		},
@@ -727,7 +727,7 @@ func (s *KeeperTestSuite) TestWithdraw() {
 			Msg: *types.NewMsgWithdraw(
 				appID1, addr1, 69, availablePoolBalance,
 			),
-			ExpErr:           sdkerrors.Wrapf(sdkerrors.ErrNotFound, "pool %d not found", 69),
+			ExpErr:           errorsmod.Wrapf(sdkerrors.ErrNotFound, "pool %d not found", 69),
 			ExpResp:          &types.WithdrawRequest{},
 			AvailableBalance: sdk.NewCoins(),
 		},
@@ -736,7 +736,7 @@ func (s *KeeperTestSuite) TestWithdraw() {
 			Msg: *types.NewMsgWithdraw(
 				appID1, addr1, pool.Id, availablePoolBalance.Add(sdk.NewCoin(availablePoolBalance.Denom, availablePoolBalance.Amount.Add(newInt(1000)))),
 			),
-			ExpErr:           sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance %s is smaller than %s", availablePoolBalance.String(), availablePoolBalance.Add(sdk.NewCoin(availablePoolBalance.Denom, availablePoolBalance.Amount.Add(newInt(1000)))).String()),
+			ExpErr:           errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance %s is smaller than %s", availablePoolBalance.String(), availablePoolBalance.Add(sdk.NewCoin(availablePoolBalance.Denom, availablePoolBalance.Amount.Add(newInt(1000)))).String()),
 			ExpResp:          &types.WithdrawRequest{},
 			AvailableBalance: sdk.NewCoins(),
 		},
@@ -945,7 +945,7 @@ func (s *KeeperTestSuite) TestCreateRangedPool() {
 				sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin(app1pair.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 				sdkmath.LegacyMustNewDecFromStr("0.99"), sdkmath.LegacyMustNewDecFromStr("1.01"), sdkmath.LegacyMustNewDecFromStr("1"),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidAppID, "app id %d not found", 69),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -958,7 +958,7 @@ func (s *KeeperTestSuite) TestCreateRangedPool() {
 				sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin(app1pair.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 				sdkmath.LegacyMustNewDecFromStr("0.99"), sdkmath.LegacyMustNewDecFromStr("1.01"), sdkmath.LegacyMustNewDecFromStr("1"),
 			),
-			ExpErr:             sdkerrors.Wrapf(sdkerrors.ErrNotFound, "pair %d not found", 12),
+			ExpErr:             errorsmod.Wrapf(sdkerrors.ErrNotFound, "pair %d not found", 12),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -971,7 +971,7 @@ func (s *KeeperTestSuite) TestCreateRangedPool() {
 				sdk.NewCoins(sdk.NewCoin("fakedenom1", sdkmath.NewInt(1000000000000)), sdk.NewCoin("fakedenom2", sdkmath.NewInt(1000000000000))),
 				sdkmath.LegacyMustNewDecFromStr("0.99"), sdkmath.LegacyMustNewDecFromStr("1.01"), sdkmath.LegacyMustNewDecFromStr("1"),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom1"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom1"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -983,7 +983,7 @@ func (s *KeeperTestSuite) TestCreateRangedPool() {
 				appID1, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin("fakedenom2", sdkmath.NewInt(1000000000000))),
 				sdkmath.LegacyMustNewDecFromStr("0.99"), sdkmath.LegacyMustNewDecFromStr("1.01"), sdkmath.LegacyMustNewDecFromStr("1"),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom2"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom2"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -995,7 +995,7 @@ func (s *KeeperTestSuite) TestCreateRangedPool() {
 				appID1, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin("fakedenom1", sdkmath.NewInt(1000000000000)), sdk.NewCoin(app1pair.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 				sdkmath.LegacyMustNewDecFromStr("0.99"), sdkmath.LegacyMustNewDecFromStr("1.01"), sdkmath.LegacyMustNewDecFromStr("1"),
 			),
-			ExpErr:             sdkerrors.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom1"),
+			ExpErr:             errorsmod.Wrapf(types.ErrInvalidCoinDenom, "coin denom %s is not in the pair", "fakedenom1"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -1031,7 +1031,7 @@ func (s *KeeperTestSuite) TestCreateRangedPool() {
 				appID1, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, params.MinInitialDepositAmount), sdk.NewCoin(app1pair.QuoteCoinDenom, params.MinInitialDepositAmount.Sub(sdkmath.NewInt(1)))),
 				sdkmath.LegacyMustNewDecFromStr("0.99"), sdkmath.LegacyMustNewDecFromStr("1.01"), sdkmath.LegacyMustNewDecFromStr("0.98"),
 			),
-			ExpErr:             sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "initial price must not be lower than min price"),
+			ExpErr:             errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "initial price must not be lower than min price"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -1043,7 +1043,7 @@ func (s *KeeperTestSuite) TestCreateRangedPool() {
 				appID1, addr1, app1pair.Id, sdk.NewCoins(sdk.NewCoin(app1pair.BaseCoinDenom, params.MinInitialDepositAmount), sdk.NewCoin(app1pair.QuoteCoinDenom, params.MinInitialDepositAmount.Sub(sdkmath.NewInt(1)))),
 				sdkmath.LegacyMustNewDecFromStr("0.99"), sdkmath.LegacyMustNewDecFromStr("1.01"), sdkmath.LegacyMustNewDecFromStr("1.05"),
 			),
-			ExpErr:             sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "initial price must not be higher than max price"),
+			ExpErr:             errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "initial price must not be higher than max price"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -1057,7 +1057,7 @@ func (s *KeeperTestSuite) TestCreateRangedPool() {
 				appID1, addr1, dummyPair1.Id, sdk.NewCoins(sdk.NewCoin(dummyPair1.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin(dummyPair1.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 				sdkmath.LegacyMustNewDecFromStr("0.99"), sdkmath.LegacyMustNewDecFromStr("1.01"), sdkmath.LegacyMustNewDecFromStr("1"),
 			),
-			ExpErr:             sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than 1000000000000%s", dummyPair1.QuoteCoinDenom),
+			ExpErr:             errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than 1000000000000%s", dummyPair1.QuoteCoinDenom),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,
@@ -1071,7 +1071,7 @@ func (s *KeeperTestSuite) TestCreateRangedPool() {
 				appID1, addr1, dummyPair2.Id, sdk.NewCoins(sdk.NewCoin(dummyPair2.BaseCoinDenom, sdkmath.NewInt(1000000000000)), sdk.NewCoin(dummyPair2.QuoteCoinDenom, sdkmath.NewInt(1000000000000))),
 				sdkmath.LegacyMustNewDecFromStr("0.99"), sdkmath.LegacyMustNewDecFromStr("1.01"), sdkmath.LegacyMustNewDecFromStr("1"),
 			),
-			ExpErr:             sdkerrors.Wrap(sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than %s", params.PoolCreationFee[0].String()), "insufficient pool creation fee"),
+			ExpErr:             errorsmod.Wrap(errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "spendable balance  is smaller than %s", params.PoolCreationFee[0].String()), "insufficient pool creation fee"),
 			ExpResp:            &types.Pool{},
 			QueryResponseIndex: 0,
 			QueryResponse:      nil,

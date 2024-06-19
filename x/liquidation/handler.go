@@ -1,11 +1,10 @@
 package liquidation
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
+	errorsmod "cosmossdk.io/errors"
 	"github.com/comdex-official/comdex/x/liquidation/keeper"
 	"github.com/comdex-official/comdex/x/liquidation/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // NewHandler ...
@@ -23,7 +22,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			res, err := server.MsgLiquidateBorrow(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
-			return nil, sdkerrors.Wrapf(types.ErrorUnknownMsgType, "%T", msg)
+			return nil, errorsmod.Wrapf(types.ErrorUnknownMsgType, "%T", msg)
 		}
 	}
 }

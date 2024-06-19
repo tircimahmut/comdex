@@ -121,7 +121,7 @@ func (a AppModule) EndBlock(_ sdk.Context, _ abcitypes.RequestEndBlock) []abcity
 
 func (a AppModule) GenerateGenesisState(_ *module.SimulationState) {}
 
-func (a AppModule) ProposalContents(_ module.SimulationState) []simulation.WeightedProposalContent {
+func (a AppModule) ProposalContents(_ module.SimulationState) []simulation.WeightedProposalMsg {
 	return nil
 }
 
