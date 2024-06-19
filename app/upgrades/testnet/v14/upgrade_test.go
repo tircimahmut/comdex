@@ -55,4 +55,8 @@ func postUpgradeChecks(s *UpgradeTestSuite) {
 	// Ensure the wasm Permission nobody
 	wp := s.App.WasmKeeper.GetParams(s.Ctx)
 	s.Require().Equal(wp.CodeUploadAccess, wasmtypes.AllowNobody)
+
+	// ensure auth params are updated
+	ap := s.App.AccountKeeper.GetParams(s.Ctx)
+	s.Require().Equal(ap.TxSizeCostPerByte, uint64(20))
 }
