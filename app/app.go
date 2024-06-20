@@ -67,7 +67,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	distr "github.com/cosmos/cosmos-sdk/x/distribution"
+
+	//distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/evidence"
@@ -206,8 +207,14 @@ import (
 
 	cwasm "github.com/comdex-official/comdex/app/wasm"
 
-	mv13 "github.com/comdex-official/comdex/app/upgrades/mainnet/v13"
-	tv14 "github.com/comdex-official/comdex/app/upgrades/testnet/v14"
+	ccvconsumer "github.com/cosmos/interchain-security/v4/x/ccv/consumer"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	ccvdistr "github.com/cosmos/interchain-security/v4/x/ccv/democracy/distribution"
+	ccvgov "github.com/cosmos/interchain-security/v4/x/ccv/democracy/governance"
+	ccvstaking "github.com/cosmos/interchain-security/v4/x/ccv/democracy/staking"
+
+	tv15 "github.com/comdex-official/comdex/app/upgrades/testnet/v15"
 )
 
 const (
@@ -263,9 +270,10 @@ var (
 		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
 		bank.AppModuleBasic{},
 		capability.AppModuleBasic{},
+		ccvstaking.AppModuleBasic{},
 		staking.AppModuleBasic{},
 		mint.AppModuleBasic{},
-		distr.AppModuleBasic{},
+		ccvdistr.AppModuleBasic{},
 		gov.NewAppModuleBasic(GetGovProposalHandlers()),
 		params.AppModuleBasic{},
 		crisis.AppModuleBasic{},
@@ -282,7 +290,7 @@ var (
 		asset.AppModuleBasic{},
 		esm.AppModuleBasic{},
 		lend.AppModuleBasic{},
-
+		ccvconsumer.AppModuleBasic{},
 		market.AppModuleBasic{},
 		locker.AppModuleBasic{},
 		bandoraclemodule.AppModuleBasic{},
@@ -341,7 +349,7 @@ type App struct {
 	BankBaseKeeper    *bankkeeper.BaseKeeper
 	AuthzKeeper       authzkeeper.Keeper
 	CapabilityKeeper  *capabilitykeeper.Keeper
-	StakingKeeper     *stakingkeeper.Keeper
+	StakingKeeper     stakingkeeper.Keeper
 	SlashingKeeper    slashingkeeper.Keeper
 	MintKeeper        mintkeeper.Keeper
 	DistrKeeper       distrkeeper.Keeper
@@ -353,6 +361,7 @@ type App struct {
 	IBCFeeKeeper      ibcfeekeeper.Keeper
 	IbcHooksKeeper    *ibchookskeeper.Keeper
 	ICAHostKeeper     icahostkeeper.Keeper
+	ConsumerKeeper    ccvconsumerkeeper.Keeper
 	EvidenceKeeper    evidencekeeper.Keeper
 	IbcTransferKeeper ibctransferkeeper.Keeper
 
@@ -363,6 +372,7 @@ type App struct {
 	ScopedBandoracleKeeper  capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper     capabilitykeeper.ScopedKeeper
 	ScopedICQKeeper         capabilitykeeper.ScopedKeeper
+	ScopedCCVConsumerKeeper capabilitykeeper.ScopedKeeper
 
 	BandoracleKeeper bandoraclemodulekeeper.Keeper
 	AssetKeeper      assetkeeper.Keeper
@@ -431,7 +441,8 @@ func New(
 			wasmtypes.StoreKey, authzkeeper.StoreKey, auctiontypes.StoreKey, tokenminttypes.StoreKey,
 			rewardstypes.StoreKey, feegrant.StoreKey, liquiditytypes.StoreKey, esmtypes.ModuleName, lendtypes.StoreKey,
 			liquidationsV2types.StoreKey, auctionsV2types.StoreKey,
-			ibchookstypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, auctionmoduleskiptypes.StoreKey,
+			ibchookstypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey, consensusparamtypes.StoreKey, ccvconsumertypes.StoreKey,
+			crisistypes.StoreKey, auctionmoduleskiptypes.StoreKey,
 		)
 	)
 
@@ -472,6 +483,7 @@ func New(
 	app.ParamsKeeper.Subspace(ibctransfertypes.ModuleName)
 	app.ParamsKeeper.Subspace(ibchost.ModuleName)
 	app.ParamsKeeper.Subspace(icahosttypes.SubModuleName)
+	app.ParamsKeeper.Subspace(ccvconsumertypes.ModuleName)
 	app.ParamsKeeper.Subspace(vaulttypes.ModuleName)
 	app.ParamsKeeper.Subspace(assettypes.ModuleName)
 	app.ParamsKeeper.Subspace(collectortypes.ModuleName)
@@ -504,13 +516,14 @@ func New(
 
 	// grant capabilities for the ibc and ibc-transfer modules
 	var (
-		scopedIBCKeeper        = app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
-		scopedTransferKeeper   = app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-		scopedIBCOracleKeeper  = app.CapabilityKeeper.ScopeToModule(markettypes.ModuleName) // can remove it
-		scopedWasmKeeper       = app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
-		scopedICAHostKeeper    = app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
-		scopedBandoracleKeeper = app.CapabilityKeeper.ScopeToModule(bandoraclemoduletypes.ModuleName)
-		scopedICQKeeper        = app.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
+		scopedIBCKeeper         = app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
+		scopedTransferKeeper    = app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+		scopedIBCOracleKeeper   = app.CapabilityKeeper.ScopeToModule(markettypes.ModuleName) // can remove it
+		scopedWasmKeeper        = app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
+		scopedICAHostKeeper     = app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
+		scopedBandoracleKeeper  = app.CapabilityKeeper.ScopeToModule(bandoraclemoduletypes.ModuleName)
+		scopedICQKeeper         = app.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
+		scopedCCVConsumerKeeper = app.CapabilityKeeper.ScopeToModule(ccvconsumertypes.ModuleName)
 	)
 
 	// add keepers
@@ -551,7 +564,7 @@ func New(
 		app.AccountKeeper,
 		app.BankKeeper,
 		stakingKeeper,
-		authtypes.FeeCollectorName,
+		ccvconsumertypes.ConsumerRedistributeName,
 		govModAddress,
 	)
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
@@ -597,14 +610,21 @@ func New(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(),
 			app.SlashingKeeper.Hooks()),
 	)
-	app.StakingKeeper = stakingKeeper
+	app.StakingKeeper = *stakingKeeper
+
+	// Add ICS Consumer Keeper
+	app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
+		appCodec,
+		keys[ccvconsumertypes.StoreKey],
+		app.GetSubspace(ccvconsumertypes.ModuleName),
+	)
 
 	// Create IBC Keeper
 	app.IbcKeeper = ibckeeper.NewKeeper(
 		app.cdc,
 		app.keys[ibchost.StoreKey],
 		app.GetSubspace(ibchost.ModuleName),
-		app.StakingKeeper,
+		&app.ConsumerKeeper,
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
 	)
@@ -623,6 +643,12 @@ func New(
 		app.Ics20WasmHooks,
 	)
 
+	// Add ICS Consumer Keeper
+	app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
+		appCodec,
+		keys[ccvconsumertypes.StoreKey],
+		app.GetSubspace(ccvconsumertypes.ModuleName),
+	)
 	// Do not use this middleware for anything except x/wasm requirement.
 	// The spec currently requires new channels to be created, to use it.
 	// We need to wait for Channel Upgradability before we can use this for any other middleware.
@@ -889,6 +915,28 @@ func New(
 		govModAddress,
 	)
 
+	// Create CCV consumer and modules
+	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
+		appCodec,
+		keys[ccvconsumertypes.StoreKey],
+		app.GetSubspace(ccvconsumertypes.ModuleName),
+		scopedCCVConsumerKeeper,
+		app.IbcKeeper.ChannelKeeper,
+		&app.IbcKeeper.PortKeeper,
+		app.IbcKeeper.ConnectionKeeper,
+		app.IbcKeeper.ClientKeeper,
+		app.SlashingKeeper,
+		app.BankKeeper,
+		app.AccountKeeper,
+		&app.IbcTransferKeeper,
+		app.IbcKeeper,
+		authtypes.FeeCollectorName,
+	)
+	app.ConsumerKeeper.SetStandaloneStakingKeeper(app.StakingKeeper)
+
+	// register slashing module StakingHooks to the consumer keeper
+	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
+	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 	// ICQ Keeper
 	icqKeeper := icqkeeper.NewKeeper(
 		appCodec,
@@ -1000,15 +1048,39 @@ func New(
 	ibcRouter.AddRoute(wasmtypes.ModuleName, wasmStack)
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack)
 	ibcRouter.AddRoute(icqtypes.ModuleName, icqModule)
+	ibcRouter.AddRoute(ccvconsumertypes.ModuleName, consumerModule)
 	app.IbcKeeper.SetRouter(ibcRouter)
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	app.EvidenceKeeper = *evidencekeeper.NewKeeper(
 		app.cdc,
 		app.keys[evidencetypes.StoreKey],
-		app.StakingKeeper,
+		&app.ConsumerKeeper,
 		app.SlashingKeeper,
 	)
 	app.EvidenceKeeper.SetRouter(evidenceRouter)
+
+	// Create CCV consumer and modules
+	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
+		appCodec,
+		keys[ccvconsumertypes.StoreKey],
+		app.GetSubspace(ccvconsumertypes.ModuleName),
+		scopedCCVConsumerKeeper,
+		app.IbcKeeper.ChannelKeeper,
+		&app.IbcKeeper.PortKeeper,
+		app.IbcKeeper.ConnectionKeeper,
+		app.IbcKeeper.ClientKeeper,
+		app.SlashingKeeper,
+		app.BankKeeper,
+		app.AccountKeeper,
+		&app.IbcTransferKeeper,
+		app.IbcKeeper,
+		authtypes.FeeCollectorName,
+	)
+	app.ConsumerKeeper.SetStandaloneStakingKeeper(app.StakingKeeper)
+
+	// register slashing module StakingHooks to the consumer keeper
+	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
+	consumerModule = ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 
 	/****  Module Options ****/
 
@@ -1025,12 +1097,13 @@ func New(
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(app.cdc, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
 		capability.NewAppModule(app.cdc, *app.CapabilityKeeper, false),
+		ccvgov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, IsProposalWhitelisted, app.GetSubspace(govtypes.ModuleName), IsModuleWhiteList),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 		gov.NewAppModule(app.cdc, &app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
 		mint.NewAppModule(app.cdc, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)), // nil -> SDK's default inflation function.
-		slashing.NewAppModule(app.cdc, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName)),
-		distr.NewAppModule(app.cdc, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(distrtypes.ModuleName)),
-		staking.NewAppModule(app.cdc, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
+		slashing.NewAppModule(app.cdc, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.ConsumerKeeper, app.GetSubspace(slashingtypes.ModuleName)),
+		ccvdistr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, authtypes.FeeCollectorName, app.GetSubspace(distrtypes.ModuleName)),
+		ccvstaking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		authzmodule.NewAppModule(app.cdc, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
@@ -1061,6 +1134,7 @@ func New(
 		icq.NewAppModule(*app.ICQKeeper),
 		packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 		auctionmoduleskip.NewAppModule(app.cdc, app.AuctionKeeperSkip),
+		consumerModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -1084,6 +1158,7 @@ func New(
 		authtypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authz.ModuleName,
+		ccvconsumertypes.ModuleName,
 		assettypes.ModuleName,
 		collectortypes.ModuleName,
 		vaulttypes.ModuleName,
@@ -1127,6 +1202,7 @@ func New(
 		authtypes.ModuleName,
 		slashingtypes.ModuleName,
 		authz.ModuleName,
+		ccvconsumertypes.ModuleName,
 		paramstypes.ModuleName,
 		capabilitytypes.ModuleName,
 		upgradetypes.ModuleName,
@@ -1176,6 +1252,7 @@ func New(
 		ibctransfertypes.ModuleName,
 		wasmtypes.ModuleName,
 		authz.ModuleName,
+		ccvconsumertypes.ModuleName,
 		vestingtypes.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
@@ -1206,7 +1283,7 @@ func New(
 	app.mm.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(app.cdc, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.mm.RegisterServices(app.configurator)
-	app.registerUpgradeHandlers()
+	app.registerUpgradeHandlers(appOptions)
 	// initialize stores
 	app.MountKVStores(app.keys)
 	app.MountTransientStores(app.tkeys)
@@ -1258,6 +1335,7 @@ func New(
 			TxDecoder:         encoding.TxConfig.TxDecoder(),
 			TxEncoder:         encoding.TxConfig.TxEncoder(),
 			auctionkeeperskip: app.AuctionKeeperSkip,
+			ConsumerKeeper:    app.ConsumerKeeper,
 		},
 	)
 	if err != nil {
@@ -1347,6 +1425,7 @@ func New(
 	app.ScopedICQKeeper = scopedICQKeeper
 
 	app.ScopedWasmKeeper = scopedWasmKeeper
+	app.ScopedCCVConsumerKeeper = scopedCCVConsumerKeeper
 	return app
 }
 
@@ -1501,51 +1580,76 @@ func (a *App) RegisterNodeService(clientCtx client.Context) {
 	nodeservice.RegisterNodeService(clientCtx, a.GRPCQueryRouter())
 }
 
+// ConsumerApp interface implementations for e2e tests
+// GetConsumerKeeper implements the ConsumerApp interface.
+func (app *App) GetConsumerKeeper() ccvconsumerkeeper.Keeper {
+	return app.ConsumerKeeper
+}
+
+// This is used for non-legacy gov transactions
+// Returning true cause all txs are whitelisted
+func IsModuleWhiteList(typeUrl string) bool {
+	return true
+}
+
+// This is used for legacy gov transactions
+// Returning true cause all txs are whitelisted
+func IsProposalWhitelisted(content govtypesv1beta1.Content) bool {
+	return true
+}
+
 func (a *App) ModuleAccountsPermissions() map[string][]string {
 	return map[string][]string{
-		authtypes.FeeCollectorName:        nil,
-		distrtypes.ModuleName:             nil,
-		govtypes.ModuleName:               {authtypes.Burner},
-		ibctransfertypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
-		minttypes.ModuleName:              {authtypes.Minter},
-		stakingtypes.BondedPoolName:       {authtypes.Burner, authtypes.Staking},
-		stakingtypes.NotBondedPoolName:    {authtypes.Burner, authtypes.Staking},
-		collectortypes.ModuleName:         {authtypes.Burner, authtypes.Staking},
-		vaulttypes.ModuleName:             {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleName:              {authtypes.Minter, authtypes.Burner},
-		tokenminttypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc1:              {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc2:              {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc3:              {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc4:              {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc5:              {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc6:              {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc7:              {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc8:              {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc9:              {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc10:             {authtypes.Minter, authtypes.Burner},
-		lendtypes.ModuleAcc11:             {authtypes.Minter, authtypes.Burner},
-		liquidationtypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
-		auctiontypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
-		lockertypes.ModuleName:            {authtypes.Minter, authtypes.Burner},
-		esmtypes.ModuleName:               {authtypes.Burner},
-		wasmtypes.ModuleName:              {authtypes.Burner},
-		liquiditytypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
-		rewardstypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
-		liquidationsV2types.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		auctionsV2types.ModuleName:        {authtypes.Minter, authtypes.Burner},
-		icatypes.ModuleName:               nil,
-		ibcfeetypes.ModuleName:            nil,
-		assettypes.ModuleName:             nil,
-		icqtypes.ModuleName:               nil,
-		auctionmoduleskiptypes.ModuleName: nil,
+		authtypes.FeeCollectorName:                    nil,
+		distrtypes.ModuleName:                         nil,
+		ccvconsumertypes.ConsumerRedistributeName:     nil,
+		ccvconsumertypes.ConsumerToSendToProviderName: nil,
+		govtypes.ModuleName:                           {authtypes.Burner},
+		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
+		minttypes.ModuleName:                          {authtypes.Minter},
+		stakingtypes.BondedPoolName:                   {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName:                {authtypes.Burner, authtypes.Staking},
+		collectortypes.ModuleName:                     {authtypes.Burner, authtypes.Staking},
+		vaulttypes.ModuleName:                         {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleName:                          {authtypes.Minter, authtypes.Burner},
+		tokenminttypes.ModuleName:                     {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc1:                          {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc2:                          {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc3:                          {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc4:                          {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc5:                          {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc6:                          {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc7:                          {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc8:                          {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc9:                          {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc10:                         {authtypes.Minter, authtypes.Burner},
+		lendtypes.ModuleAcc11:                         {authtypes.Minter, authtypes.Burner},
+		liquidationtypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
+		auctiontypes.ModuleName:                       {authtypes.Minter, authtypes.Burner},
+		lockertypes.ModuleName:                        {authtypes.Minter, authtypes.Burner},
+		esmtypes.ModuleName:                           {authtypes.Burner},
+		wasmtypes.ModuleName:                          {authtypes.Burner},
+		liquiditytypes.ModuleName:                     {authtypes.Minter, authtypes.Burner},
+		rewardstypes.ModuleName:                       {authtypes.Minter, authtypes.Burner},
+		liquidationsV2types.ModuleName:                {authtypes.Minter, authtypes.Burner},
+		auctionsV2types.ModuleName:                    {authtypes.Minter, authtypes.Burner},
+		icatypes.ModuleName:                           nil,
+		ibcfeetypes.ModuleName:                        nil,
+		assettypes.ModuleName:                         nil,
+		icqtypes.ModuleName:                           nil,
+		auctionmoduleskiptypes.ModuleName:             nil,
 	}
 }
 
-func (a *App) registerUpgradeHandlers() {
+func (a *App) registerUpgradeHandlers(appOptions servertypes.AppOptions) {
 	a.UpgradeKeeper.SetUpgradeHandler(
-		tv14.UpgradeName,
-		tv14.CreateUpgradeHandlerV14(a.mm, a.configurator, a.AuctionKeeperSkip, a.LendKeeper, a.WasmKeeper, *a.StakingKeeper, a.MintKeeper, a.SlashingKeeper, a.BandoracleKeeper),
+		tv15.UpgradeName,
+		tv15.CreateUpgradeHandler(a.mm,
+			a.configurator,
+			a.cdc, appOptions,
+			*a.IbcKeeper,
+			&a.ConsumerKeeper,
+			a.StakingKeeper),
 	)
 	// When a planned update height is reached, the old binary will panic
 	// writing on disk the height and name of the update that triggered it
@@ -1568,18 +1672,7 @@ func (a *App) registerUpgradeHandlers() {
 func upgradeHandlers(upgradeInfo upgradetypes.Plan, a *App, storeUpgrades *storetypes.StoreUpgrades) *storetypes.StoreUpgrades {
 	switch {
 
-	case upgradeInfo.Name == mv13.UpgradeName && !a.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height):
-		storeUpgrades = &storetypes.StoreUpgrades{
-			Added: []string{
-				icqtypes.StoreKey,
-				liquidationsV2types.ModuleName,
-				auctionsV2types.ModuleName,
-				crisistypes.StoreKey,
-				consensusparamtypes.StoreKey,
-				ibcfeetypes.StoreKey,
-			},
-		}
-	case upgradeInfo.Name == tv14.UpgradeName && !a.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height):
+	case upgradeInfo.Name == tv15.UpgradeName && !a.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height):
 		storeUpgrades = &storetypes.StoreUpgrades{
 			Added: []string{
 				auctionmoduleskiptypes.StoreKey,

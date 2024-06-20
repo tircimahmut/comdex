@@ -1,8 +1,8 @@
 package app
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	tmprototypes "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -34,7 +34,7 @@ func (a *App) ExportAppStateAndValidators(
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := staking.WriteValidators(ctx, a.StakingKeeper)
+	validators, err := staking.WriteValidators(ctx, &a.StakingKeeper)
 	return servertypes.ExportedApp{
 		AppState:        appState,
 		Validators:      validators,
@@ -107,7 +107,7 @@ func (a *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []strin
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
 		a.DistrKeeper.SetFeePool(ctx, feePool)
 
-		if err := a.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator()); err !=nil {
+		if err := a.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator()); err != nil {
 			panic(err)
 		}
 		return false
