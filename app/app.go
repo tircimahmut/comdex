@@ -1586,18 +1586,6 @@ func (app *App) GetConsumerKeeper() ccvconsumerkeeper.Keeper {
 	return app.ConsumerKeeper
 }
 
-// This is used for non-legacy gov transactions
-// Returning true cause all txs are whitelisted
-func IsModuleWhiteList(typeUrl string) bool {
-	return true
-}
-
-// This is used for legacy gov transactions
-// Returning true cause all txs are whitelisted
-func IsProposalWhitelisted(content govtypesv1beta1.Content) bool {
-	return true
-}
-
 func (a *App) ModuleAccountsPermissions() map[string][]string {
 	return map[string][]string{
 		authtypes.FeeCollectorName:                    nil,
