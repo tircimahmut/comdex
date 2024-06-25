@@ -1663,7 +1663,7 @@ func upgradeHandlers(upgradeInfo upgradetypes.Plan, a *App, storeUpgrades *store
 	case upgradeInfo.Name == tv15.UpgradeName && !a.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height):
 		storeUpgrades = &storetypes.StoreUpgrades{
 			Added: []string{
-				auctionmoduleskiptypes.StoreKey,
+				ccvconsumertypes.StoreKey,
 			},
 		}
 	}
