@@ -542,7 +542,7 @@ func New(
 		nil,
 		govModAddress,
 	)
-	stakingKeeper := stakingkeeper.NewKeeper(
+	app.StakingKeeper = *stakingkeeper.NewKeeper(
 		app.cdc,
 		app.keys[stakingtypes.StoreKey],
 		app.AccountKeeper,
@@ -552,7 +552,7 @@ func New(
 	app.MintKeeper = mintkeeper.NewKeeper(
 		app.cdc,
 		app.keys[minttypes.StoreKey],
-		stakingKeeper,
+		app.StakingKeeper,
 		app.AccountKeeper,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
@@ -563,7 +563,7 @@ func New(
 		app.keys[distrtypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
-		stakingKeeper,
+		app.StakingKeeper,
 		ccvconsumertypes.ConsumerRedistributeName,
 		govModAddress,
 	)
@@ -571,7 +571,7 @@ func New(
 		app.cdc,
 		encoding.Amino,
 		app.keys[slashingtypes.StoreKey],
-		stakingKeeper,
+		&app.ConsumerKeeper,
 		govModAddress,
 	)
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
@@ -606,11 +606,10 @@ func New(
 	// 		app.SlashingKeeper.Hooks(),
 	// 	),
 	// )
-	stakingKeeper.SetHooks(
+	app.StakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(),
 			app.SlashingKeeper.Hooks()),
 	)
-	app.StakingKeeper = *stakingKeeper
 
 	// Add ICS Consumer Keeper
 	app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
@@ -1058,29 +1057,6 @@ func New(
 		app.SlashingKeeper,
 	)
 	app.EvidenceKeeper.SetRouter(evidenceRouter)
-
-	// Create CCV consumer and modules
-	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
-		appCodec,
-		keys[ccvconsumertypes.StoreKey],
-		app.GetSubspace(ccvconsumertypes.ModuleName),
-		scopedCCVConsumerKeeper,
-		app.IbcKeeper.ChannelKeeper,
-		&app.IbcKeeper.PortKeeper,
-		app.IbcKeeper.ConnectionKeeper,
-		app.IbcKeeper.ClientKeeper,
-		app.SlashingKeeper,
-		app.BankKeeper,
-		app.AccountKeeper,
-		&app.IbcTransferKeeper,
-		app.IbcKeeper,
-		authtypes.FeeCollectorName,
-	)
-	app.ConsumerKeeper.SetStandaloneStakingKeeper(app.StakingKeeper)
-
-	// register slashing module StakingHooks to the consumer keeper
-	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
-	consumerModule = ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 
 	/****  Module Options ****/
 
