@@ -2,6 +2,7 @@ package v15
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -47,7 +48,7 @@ func CreateUpgradeHandler(
 		consumerGenesis.Params.SoftOptOutThreshold = "0.05"
 		consumerGenesis.Params.RewardDenoms = []string{"ucmdx"}
 		consumerKeeper.InitGenesis(ctx, &consumerGenesis)
-		consumerKeeper.SetDistributionTransmissionChannel(ctx, "channel-0")
+		consumerKeeper.SetDistributionTransmissionChannel(ctx, "channel-2")
 
 		return fromVM, nil
 	}
