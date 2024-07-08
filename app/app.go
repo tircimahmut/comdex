@@ -607,8 +607,7 @@ func New(
 	// 	),
 	// )
 	app.StakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(),
-			app.SlashingKeeper.Hooks()),
+		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks()),
 	)
 
 	// Add ICS Consumer Keeper
