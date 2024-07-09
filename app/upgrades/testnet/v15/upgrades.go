@@ -40,10 +40,6 @@ func CreateUpgradeHandler(
 		if err != nil {
 			return fromVM, fmt.Errorf("failed to unmarshal genesis state: %w", err)
 		}
-		newVM, err := mm.RunMigrations(ctx, configurator, fromVM)
-		if err != nil {
-			return newVM, err
-		}
 
 		var consumerGenesis = consumertypes.GenesisState{}
 		cdc.MustUnmarshalJSON(appState[consumertypes.ModuleName], &consumerGenesis)
@@ -57,6 +53,6 @@ func CreateUpgradeHandler(
 		consumerKeeper.InitGenesis(ctx, &consumerGenesis)
 		consumerKeeper.SetDistributionTransmissionChannel(ctx, "channel-2") // replace with correct channel
 
-		return newVM, nil
+		return fromVM, nil
 	}
 }
