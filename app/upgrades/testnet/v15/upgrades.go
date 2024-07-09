@@ -40,6 +40,10 @@ func CreateUpgradeHandler(
 		if err != nil {
 			return fromVM, fmt.Errorf("failed to unmarshal genesis state: %w", err)
 		}
+		newVM, err := mm.RunMigrations(ctx, configurator, fromVM)
+		if err != nil {
+			return newVM, err
+		}
 
 		var consumerGenesis = consumertypes.GenesisState{}
 		cdc.MustUnmarshalJSON(appState[consumertypes.ModuleName], &consumerGenesis)
@@ -47,9 +51,12 @@ func CreateUpgradeHandler(
 		consumerGenesis.PreCCV = true
 		consumerGenesis.Params.SoftOptOutThreshold = "0.05"
 		consumerGenesis.Params.RewardDenoms = []string{"ucmdx"}
+		consumerGenesis.Params.Enabled = true
+		consumerGenesis.Params.ProviderFeePoolAddrStr = "" // replace with provider address
+		consumerGenesis.Params.ConsumerRedistributionFraction = "0.70"
 		consumerKeeper.InitGenesis(ctx, &consumerGenesis)
-		consumerKeeper.SetDistributionTransmissionChannel(ctx, "channel-2")
+		consumerKeeper.SetDistributionTransmissionChannel(ctx, "channel-2") // replace with correct channel
 
-		return fromVM, nil
+		return newVM, nil
 	}
 }
