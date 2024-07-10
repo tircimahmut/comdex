@@ -13,6 +13,8 @@ import (
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
+	consumerante "github.com/cosmos/interchain-security/v4/app/consumer/ante"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
 	auctionanteskip "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeperskip "github.com/skip-mev/block-sdk/x/auction/keeper"
 )
@@ -31,6 +33,7 @@ type HandlerOptions struct {
 	TxDecoder         sdk.TxDecoder
 	TxEncoder         sdk.TxEncoder
 	auctionkeeperskip auctionkeeperskip.Keeper
+	ConsumerKeeper    ccvconsumerkeeper.Keeper
 }
 
 func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
@@ -55,6 +58,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		wasmkeeper.NewCountTXDecorator(options.txCounterStoreKey),
 		decorators.NewGovPreventSpamDecorator(options.Cdc, options.GovKeeper),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
+		consumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
