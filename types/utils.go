@@ -224,6 +224,9 @@ func IsOverflow(r interface{}) bool {
 	case string:
 		s := strings.ToLower(r)
 		return strings.Contains(s, "overflow") || strings.HasSuffix(s, "out of bound")
+	case error:
+		s := strings.ToLower(r.Error())
+		return strings.Contains(s, "overflow") || strings.HasSuffix(s, "out of bound")
 	}
 	return false
 }

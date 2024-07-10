@@ -18,6 +18,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	consumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	testutil "github.com/comdex-official/comdex/testutil"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -134,6 +136,7 @@ func genesisStateWithValSet(t *testing.T,
 	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
 
 	bondAmt := sdk.DefaultPowerReduction
+	initValPowers := []abci.ValidatorUpdate{}
 
 	for _, val := range valSet.Validators {
 		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
@@ -155,6 +158,12 @@ func genesisStateWithValSet(t *testing.T,
 		}
 		validators = append(validators, validator)
 		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), math.LegacyOneDec()))
+		// add initial validator powers so consumer InitGenesis runs correctly
+		pub, _ := val.ToProto()
+		initValPowers = append(initValPowers, abci.ValidatorUpdate{
+			Power:  val.VotingPower,
+			PubKey: pub.PubKey,
+		})
 
 	}
 
@@ -188,6 +197,16 @@ func genesisStateWithValSet(t *testing.T,
 	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{}, []banktypes.SendEnabled{})
 	genesisState[banktypes.ModuleName] = codec.MustMarshalJSON(bankGenesis)
 	// println("genesisStateWithValSet bankState:", string(genesisState[banktypes.ModuleName]))
+	vals, err := tmtypes.PB2TM.ValidatorUpdates(initValPowers)
+	if err != nil {
+		panic("failed to get vals")
+	}
+
+	consumerGenesisState := testutil.CreateMinimalConsumerTestGenesis()
+	consumerGenesisState.Provider.InitialValSet = initValPowers
+	consumerGenesisState.Provider.ConsensusState.NextValidatorsHash = tmtypes.NewValidatorSet(vals).Hash()
+	consumerGenesisState.Params.Enabled = true
+	genesisState[consumertypes.ModuleName] = app.AppCodec().MustMarshalJSON(consumerGenesisState)
 
 	return genesisState
 }
